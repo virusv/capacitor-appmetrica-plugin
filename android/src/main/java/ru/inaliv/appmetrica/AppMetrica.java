@@ -26,77 +26,6 @@ public class AppMetrica extends Plugin {
     private boolean mAppMetricaActivated = false;
 
     /**
-     * Сконвертирует конфигурацию JSObject в объект для App Метрики
-     *
-     * @param config
-     * @return
-     */
-    public static YandexMetricaConfig toConfig(final JSObject config) throws JSONException {
-        final String apiKey = config.getString("apiKey");
-        final YandexMetricaConfig.Builder builder = YandexMetricaConfig.newConfigBuilder(apiKey);
-
-        if (config.has("handleFirstActivationAsUpdate")) {
-            builder.handleFirstActivationAsUpdate(config.getBool("handleFirstActivationAsUpdate"));
-        }
-        if (config.has("locationTracking")) {
-            builder.withLocationTracking(config.getBool("locationTracking"));
-        }
-        if (config.has("sessionTimeout")) {
-            builder.withSessionTimeout(config.getInteger("sessionTimeout"));
-        }
-        if (config.has("crashReporting")) {
-            builder.withCrashReporting(config.getBool("crashReporting"));
-        }
-        if (config.has("appVersion")) {
-            builder.withAppVersion(config.getString("appVersion"));
-        }
-        if (config.optBoolean("logs", false)) {
-            builder.withLogs();
-        }
-        if (config.has("location")) {
-            final Location location = toLocation(config.getJSObject("location"));
-            builder.withLocation(location);
-        }
-
-        return builder.build();
-    }
-
-    /**
-     * Конвертирует конфигурацию JSObject в объект Location для App Метрики
-     *
-     * @param location
-     * @return
-     * @throws JSONException
-     */
-    public static Location toLocation(final JSObject location) throws JSONException {
-        final Location yandexLocation = new Location("Custom");
-
-        if (location.has("latitude")) {
-            yandexLocation.setLatitude(location.getDouble("latitude"));
-        }
-        if (location.has("longitude")) {
-            yandexLocation.setLongitude(location.getDouble("longitude"));
-        }
-        if (location.has("altitude")) {
-            yandexLocation.setAltitude(location.getDouble("altitude"));
-        }
-        if (location.has("accuracy")) {
-            yandexLocation.setAccuracy((float) location.getDouble("accuracy"));
-        }
-        if (location.has("course")) {
-            yandexLocation.setBearing((float) location.getDouble("course"));
-        }
-        if (location.has("speed")) {
-            yandexLocation.setSpeed((float) location.getDouble("speed"));
-        }
-        if (location.has("timestamp")) {
-            yandexLocation.setTime(location.getLong("timestamp"));
-        }
-
-        return yandexLocation;
-    }
-
-    /**
      * Активация метрики
      *
      * @param call
@@ -105,7 +34,7 @@ public class AppMetrica extends Plugin {
     private void activate(PluginCall call) {
         final YandexMetricaConfig config;
         try {
-            config = toConfig(call.getData());
+            config = Converter.toConfig(call.getData());
         } catch (JSONException e) {
             call.error("Не удалось активировать метрику: " + e.getMessage());
             return;
@@ -176,7 +105,7 @@ public class AppMetrica extends Plugin {
         final JSObject locationObj = call.getData();
 
         try {
-            final Location location = toLocation(locationObj);
+            final Location location = Converter.toLocation(locationObj);
             YandexMetrica.setLocation(location);
             call.success();
         } catch (JSONException e) {
