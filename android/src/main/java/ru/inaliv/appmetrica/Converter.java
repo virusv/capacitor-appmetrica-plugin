@@ -3,12 +3,16 @@ package ru.inaliv.appmetrica;
 import android.location.Location;
 import com.getcapacitor.JSObject;
 import com.yandex.metrica.YandexMetricaConfig;
+import com.yandex.metrica.ecommerce.ECommerceAmount;
+import com.yandex.metrica.ecommerce.ECommercePrice;
+import com.yandex.metrica.ecommerce.ECommerceProduct;
 import com.yandex.metrica.ecommerce.ECommerceScreen;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -88,11 +92,94 @@ public class Converter {
     }
 
     /**
+     * From:
+     * {
+     *     "id": "779213",              // [!] Обязательный
+     *     "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
+     *     "actualPrice": { ... },      // Смотри структуру toECommercePrice
+     *     "originalPrice": { ... },    // Смотри структуру toECommercePrice
+     *     "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
+     *     "promocodes": ["BT79IYX", "UT5412EP"],
+     *     "payload": {
+     *         "ключ": "текстовое значение",
+     *         ...
+     *     }
+     * }
+     *
+     * NOTE: В iOS SDK:
+     * - "id" товара обозначается "sku"
+     *
+     * @param product
+     * @return
+     * @throws JSONException
+     */
+    public static ECommerceProduct toECommerceProduct(final JSObject product) throws JSONException {
+        ECommerceProduct yamProduct = new ECommerceProduct(product.getString("id"));
+
+        if (product.has("name")) {
+            yamProduct.setName(product.getString("name"));
+        }
+
+        if (product.has("actualPrice")) {
+            yamProduct.setActualPrice(
+                toECommercePrice(
+                    product.getJSObject("actualPrice")
+                )
+            );
+        }
+
+        if (product.has("originalPrice")) {
+            yamProduct.setOriginalPrice(
+                toECommercePrice(
+                    product.getJSObject("originalPrice")
+                )
+            );
+        }
+
+        if (product.has("categoriesPath")) {
+            yamProduct.setCategoriesPath(
+                toStringList(
+                    product.getJSONArray("categoriesPath")
+                )
+            );
+        }
+
+        if (product.has("promocodes")) {
+            yamProduct.setPromocodes(
+                toStringList(
+                    product.getJSONArray("promocodes")
+                )
+            );
+        }
+
+        if (product.has("payload")) {
+            yamProduct.setPayload(
+                toHashMapPayload(
+                    product.getJSObject("payload")
+                )
+            );
+        }
+
+        return yamProduct;
+    }
+
+    /**
+     * From:
+     * {
+     *     "name": "ProductCardActivity",
+     *     "searchQuery": "даниссимо кленовый сироп",
+     *     "сategoriesPath": ["Акции", "Красная цена"],
+     *     "payload": {
+     *         "ключ": "текстовое значение",
+     *         ...
+     *     }
+     * }
      *
      * NOTE: В SDK для iOS "сategoriesPath" называется "categoryComponents"
      *
      * @param screen
      * @return
+     * @throws JSONException
      */
     public static ECommerceScreen toECommerceScreen(final JSObject screen) throws JSONException {
         ECommerceScreen yamScreen = new ECommerceScreen();
@@ -114,6 +201,58 @@ public class Converter {
         }
 
         return yamScreen;
+    }
+
+    /**
+     * From:
+     * {
+     *     "fiat": [4.53, "USD"],
+     *     "internalComponents": [
+     *          [30_570_000, "wood"],
+     *          [26.89, "iron"],
+     *          [5.1, "gold"]
+     *     ]
+     * }
+     *
+     * @param price
+     * @return
+     * @throws JSONException
+     */
+    public static ECommercePrice toECommercePrice(final JSObject price) throws JSONException {
+        ECommercePrice yamPrice = new ECommercePrice(
+            toECommerceAmount(
+                price.getJSONArray("fiat")
+            )
+        );
+
+        if (price.has("internalComponents")) {
+            JSONArray internalComponents = price.getJSONArray("internalComponents");
+            List<ECommerceAmount> yamInternalComponents = new ArrayList<>();
+
+            for (int i = 0; i < internalComponents.length(); ++i) {
+                yamInternalComponents.add(
+                    toECommerceAmount(
+                        internalComponents.getJSONArray(i)
+                    )
+                );
+            }
+
+            yamPrice.setInternalComponents(yamInternalComponents);
+        }
+
+        return yamPrice;
+    }
+
+    /**
+     * From:
+     * [10.5, "USD"]
+     *
+     * @param jsonArray
+     * @return
+     * @throws JSONException
+     */
+    public static ECommerceAmount toECommerceAmount(JSONArray jsonArray) throws JSONException {
+        return new ECommerceAmount(jsonArray.getDouble(0), jsonArray.getString(1));
     }
 
     /**
