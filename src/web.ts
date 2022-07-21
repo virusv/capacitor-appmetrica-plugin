@@ -8,7 +8,7 @@ export class AppMetricaWeb extends WebPlugin implements AppMetricaPlugin {
       platforms: ['web'],
     });
   }
-  activate(/*config: YAMConfig*/): Promise<{ activated: boolean; }> {
+  activate(/*config: YAMConfig*/): Promise<void> {
     return Promise.reject('Web not supported. [activate()]');
   }
   reportEvent(/*options: YAMReportEventOptions*/): Promise<void> {

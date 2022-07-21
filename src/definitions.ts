@@ -9,7 +9,7 @@ export interface AppMetricaPlugin {
    * Активация метрики
    * @param config 
    */
-  activate(config: YAMConfig): Promise<{ activated: boolean; }>;
+  activate(config: YAMConfig): Promise<void>;
 
   /**
    * Отправка простого события

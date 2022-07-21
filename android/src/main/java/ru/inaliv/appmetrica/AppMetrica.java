@@ -37,7 +37,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    private void activate(PluginCall call) {
+    public void activate(PluginCall call) {
         final YandexMetricaConfig config;
         try {
             config = Converter.toConfig(call.getData());
@@ -59,11 +59,9 @@ public class AppMetrica extends Plugin {
             }
 
             mAppMetricaActivated = true;
-        }
 
-        JSObject res = new JSObject();
-        res.put("activated", mAppMetricaActivated);
-        call.success(res);
+            call.success();
+        }
     }
 
     /**
@@ -91,7 +89,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    private void reportError(PluginCall call) {
+    public void reportError(PluginCall call) {
         final String errorName = call.getString("name");
 
         Throwable errorThrowable = null;
@@ -113,7 +111,7 @@ public class AppMetrica extends Plugin {
      * @throws JSONException
      */
     @PluginMethod
-    private void setLocation(PluginCall call) {
+    public void setLocation(PluginCall call) {
         final JSObject locationObj = call.getData();
 
         try {
@@ -130,7 +128,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    private void setLocationTracking(PluginCall call) {
+    public void setLocationTracking(PluginCall call) {
         final boolean enabled = call.getBoolean("enabled");
         YandexMetrica.setLocationTracking(enabled);
         call.success();
