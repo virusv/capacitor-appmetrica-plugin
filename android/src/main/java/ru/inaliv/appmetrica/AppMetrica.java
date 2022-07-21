@@ -42,7 +42,7 @@ public class AppMetrica extends Plugin {
         try {
             config = Converter.toConfig(call.getData());
         } catch (JSONException e) {
-            call.error("Не удалось активировать метрику: " + e.getMessage());
+            call.error("Failed to activate metric: " + e.getMessage());
             return;
         }
         final Context context = getBridge().getActivity().getApplicationContext();
