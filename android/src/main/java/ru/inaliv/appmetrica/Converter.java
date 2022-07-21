@@ -4,15 +4,17 @@ import android.location.Location;
 import com.getcapacitor.JSObject;
 import com.yandex.metrica.YandexMetricaConfig;
 import com.yandex.metrica.ecommerce.ECommerceAmount;
+import com.yandex.metrica.ecommerce.ECommerceCartItem;
+import com.yandex.metrica.ecommerce.ECommerceOrder;
 import com.yandex.metrica.ecommerce.ECommercePrice;
 import com.yandex.metrica.ecommerce.ECommerceProduct;
+import com.yandex.metrica.ecommerce.ECommerceReferrer;
 import com.yandex.metrica.ecommerce.ECommerceScreen;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -94,7 +96,7 @@ public class Converter {
     /**
      * From:
      * {
-     *     "id": "779213",              // [!] Обязательный
+     *     "sku": "779213",              // [!] Обязательный
      *     "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
      *     "actualPrice": { ... },      // Смотри структуру toECommercePrice
      *     "originalPrice": { ... },    // Смотри структуру toECommercePrice
@@ -106,15 +108,12 @@ public class Converter {
      *     }
      * }
      *
-     * NOTE: В iOS SDK:
-     * - "id" товара обозначается "sku"
-     *
      * @param product
      * @return
      * @throws JSONException
      */
     public static ECommerceProduct toECommerceProduct(final JSObject product) throws JSONException {
-        ECommerceProduct yamProduct = new ECommerceProduct(product.getString("id"));
+        ECommerceProduct yamProduct = new ECommerceProduct(product.getString("sku"));
 
         if (product.has("name")) {
             yamProduct.setName(product.getString("name"));
@@ -206,7 +205,116 @@ public class Converter {
     /**
      * From:
      * {
-     *     "fiat": [4.53, "USD"],
+     *     "product": { ... }, // [!] Обязательный. Смотри структуру toECommerceProduct()
+     *     "revenue": { ... }, // [!] Обязательный. Получаемый доход. Смотри структуру toECommercePrice()
+     *     "quantity": 1.0,    // [!] Обязательный.
+     *     "referrer": { ... } // Смотри структуру toECommerceReferrer()
+     * }
+     *
+     * @param item
+     * @return
+     * @throws JSONException
+     */
+    public static ECommerceCartItem toECommerceCartItem(final JSObject item) throws JSONException {
+        ECommerceProduct yamProduct = toECommerceProduct(item.getJSObject("product"));
+        ECommercePrice yamRevenue = toECommercePrice(item.getJSObject("revenue"));
+        double quantity = (double)item.getDouble("quantity");
+
+        ECommerceCartItem yamCartItem = new ECommerceCartItem(yamProduct, yamRevenue, quantity);
+
+        if (item.has("referrer")) {
+            yamCartItem.setReferrer(
+                toECommerceReferrer(
+                    item.getJSObject("referrer")
+                )
+            );
+        }
+
+        return yamCartItem;
+    }
+
+    /**
+     * From:
+     * {
+     *     "identifier": "88528768", // [!] Обязательный.
+     *     "cartItems": [            // [!] Обязательный.
+     *          { ... },             // Смотри структуру toECommerceCartItem()
+     *          ...
+     *     ],
+     *     "payload": {
+     *         "ключ": "текстовое значение",
+     *         ...
+     *     }
+     * }
+     *
+     * @param order
+     * @return
+     * @throws JSONException
+     */
+    public static ECommerceOrder toECommerceOrder(final JSObject order) throws JSONException {
+        String identifier = order.getString("identifier");
+        List<ECommerceCartItem> yamCartItems = new ArrayList<>();
+
+        JSONArray items = order.getJSONArray("cartItems");
+        for (int i = 0; i < items.length(); ++i) {
+            ECommerceCartItem yamItem = toECommerceCartItem(
+                    JSObject.fromJSONObject(items.getJSONObject(i))
+            );
+
+            yamCartItems.add(yamItem);
+        }
+
+        ECommerceOrder yamOrder = new ECommerceOrder(identifier, yamCartItems);
+
+        if (order.has("payload")) {
+            yamOrder.setPayload(
+                toHashMapPayload(
+                    order.getJSObject("payload")
+                )
+            );
+        }
+
+        return yamOrder;
+    }
+
+    /**
+     * From:
+     * {
+     *     "type": "button",
+     *     "identifier": "76890",
+     *     "screen": { ... }      // Смотри структуру toECommerceScreen
+     * }
+     *
+     * @param referrer
+     * @return
+     * @throws JSONException
+     */
+    public static ECommerceReferrer toECommerceReferrer(final JSObject referrer) throws JSONException {
+        ECommerceReferrer yamReferrer = new ECommerceReferrer();
+
+        if (referrer.has("type")) {
+            yamReferrer.setType(referrer.getString("type"));
+        }
+
+        if (referrer.has("identifier")) {
+            yamReferrer.setIdentifier(referrer.getString("identifier"));
+        }
+
+        if (referrer.has("screen")) {
+            yamReferrer.setScreen(
+                toECommerceScreen(
+                    referrer.getJSObject("screen")
+                )
+            );
+        }
+
+        return yamReferrer;
+    }
+
+    /**
+     * From:
+     * {
+     *     "fiat": [4.53, "USD"],      // [!] Обязательный
      *     "internalComponents": [
      *          [30_570_000, "wood"],
      *          [26.89, "iron"],
@@ -257,7 +365,8 @@ public class Converter {
 
     /**
      * Используется для дополнительных значений в:
-     * - ECommerceScreen
+     * - toECommerceScreen
+     * - toECommerceProduct
      *
      * @param payload
      * @return
@@ -277,6 +386,7 @@ public class Converter {
     /**
      * Преобразует JSONArray в строковый список, используется в
      * - toECommerceScreen, для категорий
+     * - toECommerceProduct, для категорий и промокодов
      *
      * @param jsonArray
      * @return
