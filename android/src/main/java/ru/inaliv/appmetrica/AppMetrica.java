@@ -12,6 +12,12 @@ import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.yandex.metrica.ecommerce.ECommerceCartItem;
+import com.yandex.metrica.ecommerce.ECommerceEvent;
+import com.yandex.metrica.ecommerce.ECommerceOrder;
+import com.yandex.metrica.ecommerce.ECommerceProduct;
+import com.yandex.metrica.ecommerce.ECommerceReferrer;
+import com.yandex.metrica.ecommerce.ECommerceScreen;
 
 import org.json.JSONException;
 import java.util.concurrent.ExecutorService;
@@ -87,9 +93,15 @@ public class AppMetrica extends Plugin {
     @PluginMethod
     private void reportError(PluginCall call) {
         final String errorName = call.getString("name");
-        final String errorReason = call.getString("error", "Undefined Error");
 
-        Throwable errorThrowable = new Throwable(errorReason);
+        Throwable errorThrowable = null;
+
+        if (call.hasOption("error")) {
+            errorThrowable = new Throwable(
+                call.getString("error")
+            );
+        }
+
         YandexMetrica.reportError(errorName, errorThrowable);
 
         call.success();
@@ -117,12 +129,151 @@ public class AppMetrica extends Plugin {
      * Отслеживание местоположения (вкл/выкл)
      * @param call
      */
+    @PluginMethod
     private void setLocationTracking(PluginCall call) {
         final boolean enabled = call.getBoolean("enabled");
         YandexMetrica.setLocationTracking(enabled);
         call.success();
     }
 
+    //-------------------- ECOMMERCE ------------------------------------------
+
+    /**
+     * eCommerce: Открытие страницы
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void showScreenEvent(PluginCall call) {
+        try {
+            ECommerceScreen screen = Converter.toECommerceScreen(call.getData());
+
+            ECommerceEvent showScreenEvent = ECommerceEvent.showScreenEvent(screen);
+            YandexMetrica.reportECommerce(showScreenEvent);
+
+            call.success();
+        } catch (JSONException e) {
+            call.error(e.getMessage());
+        }
+    }
+
+    /**
+     * eCommerce: Просмотр карточки товара
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void showProductCardEvent(PluginCall call) {
+        try {
+            ECommerceProduct product = Converter.toECommerceProduct(call.getObject("product"));
+            ECommerceScreen screen = Converter.toECommerceScreen(call.getObject("screen"));
+
+            ECommerceEvent showProductCardEvent = ECommerceEvent.showProductCardEvent(product, screen);
+            YandexMetrica.reportECommerce(showProductCardEvent);
+
+            call.success();
+        } catch (JSONException e) {
+            call.error(e.getMessage());
+        }
+    }
+
+    /**
+     * eCommerce: Просмотр страницы товара
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void showProductDetailsEvent(PluginCall call) {
+        try {
+            ECommerceProduct product = Converter.toECommerceProduct(call.getObject("product"));
+            ECommerceReferrer referrer = Converter.toECommerceReferrer(call.getObject("referrer"));
+
+            ECommerceEvent showProductDetailsEvent = ECommerceEvent.showProductDetailsEvent(product, referrer);
+            YandexMetrica.reportECommerce(showProductDetailsEvent);
+
+            call.success();
+        } catch (JSONException e) {
+            call.error(e.getMessage());
+        }
+    }
+
+    /**
+     * eCommerce: Добавление товара в корзину
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void addCartItemEvent(PluginCall call) {
+        try {
+            ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
+
+            ECommerceEvent addCartItemEvent = ECommerceEvent.addCartItemEvent(cartItem);
+            YandexMetrica.reportECommerce(addCartItemEvent);
+
+            call.success();
+        } catch (JSONException e) {
+            call.error(e.getMessage());
+        }
+    }
+
+    /**
+     * eCommerce: Удаление товара из корзины
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void removeCartItemEvent(PluginCall call) {
+        try {
+            ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
+
+            ECommerceEvent removeCartItemEvent = ECommerceEvent.removeCartItemEvent(cartItem);
+            YandexMetrica.reportECommerce(removeCartItemEvent);
+
+            call.success();
+        } catch (JSONException e) {
+            call.error(e.getMessage());
+        }
+    }
+
+    /**
+     * eCommerce: Начало оформления заказа
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void beginCheckoutEvent(PluginCall call) {
+        try {
+            ECommerceOrder order = Converter.toECommerceOrder(call.getData());
+
+            ECommerceEvent beginCheckoutEvent = ECommerceEvent.beginCheckoutEvent(order);
+            YandexMetrica.reportECommerce(beginCheckoutEvent);
+
+            call.success();
+        } catch (JSONException e) {
+            call.error(e.getMessage());
+        }
+    }
+
+    /**
+     * eCommerce: Завершение оформления заказа
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void purchaseEvent(PluginCall call) {
+        try {
+            ECommerceOrder order = Converter.toECommerceOrder(call.getData());
+
+            ECommerceEvent purchaseEvent = ECommerceEvent.purchaseEvent(order);
+            YandexMetrica.reportECommerce(purchaseEvent);
+
+            call.success();
+        } catch (JSONException e) {
+            call.error(e.getMessage());
+        }
+    }
+
+    //-------------------- SERVICES -------------------------------------------
     /**
      * Возобновить сессию
      */

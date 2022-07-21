@@ -98,8 +98,8 @@ public class Converter {
      * {
      *     "sku": "779213",              // [!] Обязательный
      *     "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
-     *     "actualPrice": { ... },      // Смотри структуру toECommercePrice
-     *     "originalPrice": { ... },    // Смотри структуру toECommercePrice
+     *     "actualPrice": { ... },      // Смотри структуру toECommercePrice()
+     *     "originalPrice": { ... },    // Смотри структуру toECommercePrice()
      *     "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
      *     "promocodes": ["BT79IYX", "UT5412EP"],
      *     "payload": {
