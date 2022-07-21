@@ -281,7 +281,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = false;
             if (mAppMetricaActivated) {
-                YandexMetrica.resumeSession(getActivity());
+                YandexMetrica.resumeSession(getBridge().getActivity());
             }
         }
     }
@@ -293,7 +293,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = true;
             if (mAppMetricaActivated) {
-                YandexMetrica.pauseSession(getActivity());
+                YandexMetrica.pauseSession(getBridge().getActivity());
             }
         }
     }

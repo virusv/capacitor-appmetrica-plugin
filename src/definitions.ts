@@ -86,7 +86,7 @@ export interface AppMetricaPlugin {
    * 
    * @param order 
    */
-   purchaseEvent(order: ECommerceOrder): Promise<void>;
+  purchaseEvent(order: ECommerceOrder): Promise<void>;
 }
 
 //#region Share App Merika
@@ -138,7 +138,7 @@ export interface YAMShowProductDetailsEventOptions {
 
 //#region ECommerce definitions
 export type ECommercePayload = { [key: string]: string; };
-export type ECommerceAmount = [value: number, unit: string];
+export type ECommerceAmount = [number, string]; // value: number, unit: string
 
 export interface ECommercePrice {
   fiat: ECommerceAmount;
