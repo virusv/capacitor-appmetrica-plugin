@@ -5,8 +5,10 @@
 //  Created by Nalivayko Ivan on 22.07.2022.
 //
 
+
 import Foundation
 import Capacitor
+import YandexMobileMetrica
 
 /**
  * Please read the Capacitor iOS Plugin Development Guide
@@ -16,10 +18,14 @@ import Capacitor
 public class AppMetrica: CAPPlugin {
 
     @objc func activate(_ call: CAPPluginCall) {
-        let config = Converter.toConfig(config: call.options)
         
-        
-        
-        call.success([])
+        do {
+            let config = try Converter.toConfig(config: call.options as NSDictionary)
+            YMMYandexMetrica.activate(with: config)
+            
+            call.success()
+        } catch {
+            call.error("Не удалось инициализировать метрику")
+        }
     }
 }
