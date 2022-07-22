@@ -1,3 +1,10 @@
+//
+//  Plugin.swift
+//  CapacitorAppmetricaPlugin
+//
+//  Created by Nalivayko Ivan on 22.07.2022.
+//
+
 import Foundation
 import Capacitor
 
@@ -8,10 +15,11 @@ import Capacitor
 @objc(AppMetrica)
 public class AppMetrica: CAPPlugin {
 
-    @objc func echo(_ call: CAPPluginCall) {
-        let value = call.getString("value") ?? ""
-        call.success([
-            "value": value
-        ])
+    @objc func activate(_ call: CAPPluginCall) {
+        let config = Converter.toConfig(config: call.options)
+        
+        
+        
+        call.success([])
     }
 }
