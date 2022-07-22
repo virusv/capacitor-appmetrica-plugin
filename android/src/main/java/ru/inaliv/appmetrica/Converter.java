@@ -1,6 +1,8 @@
 package ru.inaliv.appmetrica;
 
 import android.location.Location;
+import android.os.Build;
+
 import com.getcapacitor.JSObject;
 import com.yandex.metrica.YandexMetricaConfig;
 import com.yandex.metrica.ecommerce.ECommerceAmount;
@@ -77,9 +79,18 @@ public class Converter {
         if (location.has("altitude")) {
             yamLocation.setAltitude(location.getDouble("altitude"));
         }
-        if (location.has("accuracy")) {
+
+        if (location.has("vAccuracy")) {
+            yamLocation.setAccuracy((float) location.getDouble("vAccuracy"));
+        }
+        else if (location.has("accuracy")) {
             yamLocation.setAccuracy((float) location.getDouble("accuracy"));
         }
+
+        if (location.has("hAccuracy") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            yamLocation.setVerticalAccuracyMeters((float) location.getDouble("hAccuracy"));
+        }
+
         if (location.has("course")) {
             yamLocation.setBearing((float) location.getDouble("course"));
         }
@@ -89,6 +100,9 @@ public class Converter {
         if (location.has("timestamp")) {
             yamLocation.setTime(location.getLong("timestamp"));
         }
+
+//        yamLocation.setVerticalAccuracyMeters(); // TODO:
+
 
         return yamLocation;
     }

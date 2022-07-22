@@ -106,6 +106,8 @@ export interface YAMLocation {
   longitude?: number;
   altitude?: number;
   accuracy?: number;
+  vAccuracy?: number;
+  hAccuracy?: number;
   course?: number;
   speed?: number;
   timestamp?: number;
