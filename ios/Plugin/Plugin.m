@@ -8,4 +8,5 @@ CAP_PLUGIN(AppMetrica, "AppMetrica",
            CAP_PLUGIN_METHOD(reportEvent, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(reportError, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(showScreenEvent, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(showProductCardEvent, CAPPluginReturnPromise);
 )

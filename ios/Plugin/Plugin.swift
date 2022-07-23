@@ -39,7 +39,7 @@ public class AppMetrica: CAPPlugin {
         let evParams = call.getObject("params");
 
         YMMYandexMetrica.reportEvent(evName, parameters: evParams);
-
+        
         call.success();
     }
 
@@ -74,4 +74,25 @@ public class AppMetrica: CAPPlugin {
 
         call.success();
     }
+    
+    /**
+     * eCommerce: Просмотр карточки товара
+     */
+    @objc func showProductCardEvent(_ call: CAPPluginCall) {
+        do {
+            let screen = Converter.toECommerceScreen(screen: call.options["screen"] as? [AnyHashable: Any] ?? [:])
+            let product = try Converter.toECommerceProduct(product: call.options["product"] as? [AnyHashable: Any] ?? [:])
+            
+            YMMYandexMetrica.report(eCommerce: .showProductCardEvent(product: product, screen: screen), onFailure: nil)
+            
+            call.success();
+        }
+        catch let e as Converter.ValidationError {
+            call.error(e.errorDescription ?? "Undefined error")
+        }
+        catch {
+            call.error("Undefined error")
+        }
+    }
+
 }

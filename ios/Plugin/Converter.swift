@@ -12,6 +12,9 @@ import CoreLocation
 class Converter {
     enum ValidationError: Error {
         case apiKeyNotDefined
+        case incorrectAmount
+        case incorrectSkuProduct
+        case unknown
     }
     
     /**
@@ -72,13 +75,13 @@ class Converter {
         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         
         let yamLocation = CLLocation(
-            coordinate: coordinate,
-            altitude: altitude,
+            coordinate:         coordinate,
+            altitude:           altitude,
             horizontalAccuracy: hAccuracy,
-            verticalAccuracy: vAccuracy,
-            course: course,
-            speed: speed,
-            timestamp: locationDate
+            verticalAccuracy:   vAccuracy,
+            course:             course,
+            speed:              speed,
+            timestamp:          locationDate
         )
         
         return yamLocation
@@ -100,12 +103,115 @@ class Converter {
      */
     static func toECommerceScreen(screen: [AnyHashable: Any]) -> YMMECommerceScreen {
         let yamScreen = YMMECommerceScreen(
-            name: screen["name"] as? String,
+            name:               screen["name"] as? String,
             categoryComponents: screen["сategoriesPath"] as? [String],
-            searchQuery: screen["searchQuery"] as? String,
-            payload: screen["payload"] as? [String:String]
+            searchQuery:        screen["searchQuery"] as? String,
+            payload:            screen["payload"] as? [String:String]
         )
         
         return yamScreen
+    }
+    
+    /**
+     * From:
+     * {
+     *     "sku": "779213",              // [!] Обязательный
+     *     "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
+     *     "actualPrice": { ... },      // Смотри структуру toECommercePrice()
+     *     "originalPrice": { ... },    // Смотри структуру toECommercePrice()
+     *     "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
+     *     "promocodes": ["BT79IYX", "UT5412EP"],
+     *     "payload": {
+     *         "ключ": "текстовое значение",
+     *         ...
+     *     }
+     * }
+     */
+    static func toECommerceProduct(product: [AnyHashable: Any]) throws -> YMMECommerceProduct {
+        guard let sku = product["sku"] as? String else {
+            throw ValidationError.incorrectSkuProduct
+        }
+        
+        var actualPrice: YMMECommercePrice? = nil
+        var originalPrice: YMMECommercePrice? = nil
+        
+        if product.index(forKey: "actualPrice") != nil {
+            actualPrice = try toECommercePrice(price: product["actualPrice"] as? [AnyHashable: Any] ?? [:])
+        }
+        
+        if product.index(forKey: "originalPrice") != nil {
+            originalPrice = try toECommercePrice(price: product["originalPrice"] as? [AnyHashable: Any] ?? [:])
+        }
+        
+        let product = YMMECommerceProduct(
+            sku:                sku,
+            name:               product["name"] as? String,
+            categoryComponents: product["сategoriesPath"] as? [String],
+            payload:            product["payload"] as? [String:String],
+            actualPrice:        actualPrice,
+            originalPrice:      originalPrice,
+            promoCodes:         product["promoCodes"] as? [String]
+        )
+        
+        return product
+    }
+    
+    /**
+     * From:
+     * {
+     *     "fiat": [4.53, "USD"],      // [!] Обязательный
+     *     "internalComponents": [
+     *          [30_570_000, "wood"],
+     *          [26.89, "iron"],
+     *          [5.1, "gold"]
+     *     ]
+     * }
+     */
+    static func toECommercePrice(price: [AnyHashable: Any]) throws -> YMMECommercePrice {
+        let internalComponents: [YMMECommerceAmount]? = try (price["internalComponents"] as? [Any])?.map { amount in
+            return try self.toECommerceAmount(amount: amount as? [Any] ?? [])
+        }
+        
+        let actualPrice = YMMECommercePrice(
+            fiat: try self.toECommerceAmount(amount: price["fiat"]! as? [Any] ?? []),
+            internalComponents: internalComponents
+        )
+        
+        return actualPrice
+    }
+    
+    /**
+     * From:
+     * [10.5, "USD"]
+     */
+    static func toECommerceAmount(amount: [Any]) throws -> YMMECommerceAmount {
+        guard
+            let value = amount[0] as? Double,
+            let unit  = amount[1] as? String
+        else {
+            throw ValidationError.incorrectAmount
+        }
+        
+        let yamAmount = YMMECommerceAmount(
+            unit:  unit,
+            value: NSDecimalNumber(value: value)
+        )
+        
+        return yamAmount
+    }
+}
+
+extension Converter.ValidationError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .apiKeyNotDefined:
+            return NSLocalizedString("Api key not defined", comment: "Api key not defined")
+        case .incorrectAmount:
+            return NSLocalizedString("Incorrect amount", comment: "Incorrect amount value")
+        case .incorrectSkuProduct:
+            return NSLocalizedString("Incorrect SKU product", comment: "Incorrect SKU product")
+        case .unknown:
+            return NSLocalizedString("Unknown", comment: "Unknown")
+        }
     }
 }
