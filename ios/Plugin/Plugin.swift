@@ -17,8 +17,10 @@ import YandexMobileMetrica
 @objc(AppMetrica)
 public class AppMetrica: CAPPlugin {
 
+    /**
+     * Инициализация плагина
+     */
     @objc func activate(_ call: CAPPluginCall) {
-        
         do {
             let config = try Converter.toConfig(config: call.options as NSDictionary)
             YMMYandexMetrica.activate(with: config)
@@ -27,5 +29,38 @@ public class AppMetrica: CAPPlugin {
         } catch {
             call.error("Не удалось инициализировать метрику")
         }
+    }
+    
+    /**
+     * Отправляет событие в App метрику
+     */
+    @objc func reportEvent(_ call: CAPPluginCall) {
+        let evName = call.getString("name") ?? "Undefined";
+        let evParams = call.getObject("params");
+
+        YMMYandexMetrica.reportEvent(evName, parameters: evParams);
+
+        call.success();
+    }
+
+    /**
+     * Отправляет ошибку в App метрику
+     */
+    @objc func reportError(_ call: CAPPluginCall) {
+        let errorName = call.getString("name") ?? "Undefined";
+        let errorMessage = call.getString("error");
+        
+        let underlyingError = YMMError.init(identifier: "Underlying YMMError")
+        let error = YMMError(
+            identifier: errorName,
+            message: errorMessage,
+            parameters: nil, // Android not supported
+            backtrace: Thread.callStackReturnAddresses,
+            underlyingError: underlyingError
+        )
+        
+        YMMYandexMetrica.report(error: error, onFailure: nil)
+
+        call.success();
     }
 }

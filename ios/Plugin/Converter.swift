@@ -14,7 +14,7 @@ class Converter {
         case apiKeyNotDefined
     }
     
-    /*
+    /**
      * Конвертирует JSObject конфигурацию в объект конфигурации для AppMetrika
      */
     static func toConfig(config: NSDictionary) throws -> YMMYandexMetricaConfiguration {
@@ -55,6 +55,9 @@ class Converter {
         return yamConfig
     }
     
+    /**
+     * Конвертирует JSObject в объект местоположения
+     */
     static func toLocation(location: NSDictionary) -> CLLocation {
         let latitude = location["latitude"] as? Double ?? 0.0
         let longitude = location["longitude"] as? Double ?? 0.0

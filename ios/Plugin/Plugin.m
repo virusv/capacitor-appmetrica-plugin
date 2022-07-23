@@ -5,4 +5,6 @@
 // each method the plugin supports using the CAP_PLUGIN_METHOD macro.
 CAP_PLUGIN(AppMetrica, "AppMetrica",
            CAP_PLUGIN_METHOD(activate, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(reportEvent, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(reportError, CAPPluginReturnPromise);
 )
