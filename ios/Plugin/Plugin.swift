@@ -63,4 +63,15 @@ public class AppMetrica: CAPPlugin {
 
         call.success();
     }
+    
+    
+    /**
+     * eCommerce: Открытие страницы
+     */
+    @objc func showScreenEvent(_ call: CAPPluginCall) {
+        let screen = Converter.toECommerceScreen(screen: call.options)
+        YMMYandexMetrica.report(eCommerce: .showScreenEvent(screen: screen), onFailure: nil)
+
+        call.success();
+    }
 }

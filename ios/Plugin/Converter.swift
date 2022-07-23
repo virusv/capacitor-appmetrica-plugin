@@ -83,4 +83,29 @@ class Converter {
         
         return yamLocation
     }
+    
+    /**
+     * From:
+     * {
+     *     "name": "ProductCardActivity",
+     *     "searchQuery": "даниссимо кленовый сироп",
+     *     "сategoriesPath": ["Акции", "Красная цена"],
+     *     "payload": {
+     *         "ключ": "текстовое значение",
+     *         ...
+     *     }
+     * }
+     *
+     * NOTE: В SDK для iOS "сategoriesPath" называется "categoryComponents"
+     */
+    static func toECommerceScreen(screen: [AnyHashable: Any]) -> YMMECommerceScreen {
+        let yamScreen = YMMECommerceScreen(
+            name: screen["name"] as? String,
+            categoryComponents: screen["сategoriesPath"] as? [String],
+            searchQuery: screen["searchQuery"] as? String,
+            payload: screen["payload"] as? [String:String]
+        )
+        
+        return yamScreen
+    }
 }
