@@ -13,8 +13,10 @@ class Converter {
     enum ValidationError: Error {
         case apiKeyNotDefined
         case incorrectAmount
-        case incorrectSkuProduct
+        case incorrectProductSku
         case incorrectProductItemQty
+        case incorrectOrderId
+        case incorrectOrderCartItems
         case unknown
     }
     
@@ -130,7 +132,7 @@ class Converter {
      */
     static func toECommerceProduct(product: [AnyHashable: Any]) throws -> YMMECommerceProduct {
         guard let sku = product["sku"] as? String else {
-            throw ValidationError.incorrectSkuProduct
+            throw ValidationError.incorrectProductSku
         }
         
         var actualPrice: YMMECommercePrice? = nil
@@ -187,6 +189,42 @@ class Converter {
         )
         
         return yamCartItem
+    }
+    
+    /**
+     * From:
+     * {
+     *     "identifier": "88528768",     [!] Обязательный.
+     *     "cartItems": [                     [!] Обязательный.
+     *          { ... },                       Смотри структуру toECommerceCartItem()
+     *          ...
+     *     ],
+     *     "payload": {
+     *         "ключ": "текстовое значение",
+     *         ...
+     *     }
+     * }
+     */
+    static func toECommerceOrder(order: [AnyHashable: Any]) throws -> YMMECommerceOrder {
+        guard let identifier = order["identifier"] as? String else {
+            throw ValidationError.incorrectOrderId
+        }
+        
+        guard let items = order["cartItems"] as? [ [AnyHashable: Any] ] else {
+            throw ValidationError.incorrectOrderCartItems
+        }
+        
+        let yamCartItems = try items.map { item in
+            return try self.toECommerceCartItem(item: item)
+        }
+        
+        let yamOrder = YMMECommerceOrder(
+            identifier: identifier,
+            cartItems:  yamCartItems,
+            payload:    order["payload"] as? [String: String]
+        )
+        
+        return yamOrder
     }
     
     /**
@@ -265,10 +303,14 @@ extension Converter.ValidationError: LocalizedError {
             return NSLocalizedString("Api key not defined", comment: "Api key not defined")
         case .incorrectAmount:
             return NSLocalizedString("Incorrect amount", comment: "Incorrect amount value")
-        case .incorrectSkuProduct:
+        case .incorrectProductSku:
             return NSLocalizedString("Incorrect SKU product", comment: "Incorrect SKU product")
         case .incorrectProductItemQty:
             return NSLocalizedString("Incorrect product qantity", comment: "Incorrect cart product item quantity")
+        case .incorrectOrderId:
+            return NSLocalizedString("Incorrect order id", comment: "Incorrect order id")
+        case .incorrectOrderCartItems:
+            return NSLocalizedString("Incorrect order cart items", comment: "Incorrect order cart items")
         case .unknown:
             return NSLocalizedString("Unknown", comment: "Unknown")
         }
