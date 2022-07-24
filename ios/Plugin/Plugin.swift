@@ -94,5 +94,25 @@ public class AppMetrica: CAPPlugin {
             call.error("Undefined error")
         }
     }
+    
+    /**
+     * eCommerce: Просмотр страницы товара
+     */
+    @objc func showProductDetailsEvent(_ call: CAPPluginCall) {
+        do {
+            let referrer = Converter.toECommerceReferrer(referrer: call.options["referrer"] as? [AnyHashable: Any] ?? [:])
+            let product = try Converter.toECommerceProduct(product: call.options["product"] as? [AnyHashable: Any] ?? [:])
+            
+            YMMYandexMetrica.report(eCommerce: .showProductDetailsEvent(product: product, referrer: referrer), onFailure: nil)
+            
+            call.success();
+        }
+        catch let e as Converter.ValidationError {
+            call.error(e.errorDescription ?? "Undefined error")
+        }
+        catch {
+            call.error("Undefined error")
+        }
+    }
 
 }

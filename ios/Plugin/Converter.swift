@@ -143,7 +143,7 @@ class Converter {
             originalPrice = try toECommercePrice(price: product["originalPrice"] as? [AnyHashable: Any] ?? [:])
         }
         
-        let product = YMMECommerceProduct(
+        let yamProduct = YMMECommerceProduct(
             sku:                sku,
             name:               product["name"] as? String,
             categoryComponents: product["сategoriesPath"] as? [String],
@@ -153,7 +153,31 @@ class Converter {
             promoCodes:         product["promoCodes"] as? [String]
         )
         
-        return product
+        return yamProduct
+    }
+    
+    /**
+     * From:
+     * {
+     *     "type": "button",
+     *     "identifier": "76890",
+     *     "screen": { ... }      // Смотри структуру toECommerceScreen
+     * }
+     */
+    static func toECommerceReferrer(referrer: [AnyHashable: Any]) -> YMMECommerceReferrer {
+        var yamScreen: YMMECommerceScreen? = nil
+        
+        if referrer.index(forKey: "screen") != nil {
+            yamScreen = toECommerceScreen(screen: referrer["screen"] as? [AnyHashable: Any] ?? [:])
+        }
+        
+        let yamReferrer = YMMECommerceReferrer(
+            type:       referrer["type"] as? String,
+            identifier: referrer["identifier"] as? String,
+            screen:     yamScreen
+        )
+        
+        return yamReferrer
     }
     
     /**
