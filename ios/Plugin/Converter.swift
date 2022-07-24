@@ -14,6 +14,7 @@ class Converter {
         case apiKeyNotDefined
         case incorrectAmount
         case incorrectSkuProduct
+        case incorrectProductItemQty
         case unknown
     }
     
@@ -136,11 +137,11 @@ class Converter {
         var originalPrice: YMMECommercePrice? = nil
         
         if product.index(forKey: "actualPrice") != nil {
-            actualPrice = try toECommercePrice(price: product["actualPrice"] as? [AnyHashable: Any] ?? [:])
+            actualPrice = try self.toECommercePrice(price: product["actualPrice"] as? [AnyHashable: Any] ?? [:])
         }
         
         if product.index(forKey: "originalPrice") != nil {
-            originalPrice = try toECommercePrice(price: product["originalPrice"] as? [AnyHashable: Any] ?? [:])
+            originalPrice = try self.toECommercePrice(price: product["originalPrice"] as? [AnyHashable: Any] ?? [:])
         }
         
         let yamProduct = YMMECommerceProduct(
@@ -154,6 +155,38 @@ class Converter {
         )
         
         return yamProduct
+    }
+    
+    /**
+     * From:
+     * {
+     *     "product": { ... },   // [!] Обязательный. Смотри структуру toECommerceProduct()
+     *     "revenue": { ... },  // [!] Обязательный. Получаемый доход. Смотри структуру toECommercePrice()
+     *     "quantity": 1.0,     // [!] Обязательный.
+     *     "referrer": { ... }    // Смотри структуру toECommerceReferrer()
+     * }
+     */
+    static func toECommerceCartItem(item: [AnyHashable: Any]) throws -> YMMECommerceCartItem {
+        let yamProduct = try self.toECommerceProduct(product: item["product"] as? [AnyHashable: Any] ?? [:])
+        let yamRevenue = try self.toECommercePrice(price: item["revenue"] as? [AnyHashable: Any] ?? [:])
+        
+        guard let quantity = item["quantity"] as? NSNumber else {
+            throw ValidationError.incorrectProductItemQty
+        }
+        
+        var yamReferrer: YMMECommerceReferrer? = nil
+        if item.index(forKey: "referrer") != nil {
+            yamReferrer = self.toECommerceReferrer(referrer: item["referrer"] as? [AnyHashable: Any] ?? [:])
+        }
+        
+        let yamCartItem = YMMECommerceCartItem(
+            product:    yamProduct,
+            quantity:   NSDecimalNumber(value: quantity.doubleValue),
+            revenue:    yamRevenue,
+            referrer:   yamReferrer
+        )
+        
+        return yamCartItem
     }
     
     /**
@@ -210,7 +243,7 @@ class Converter {
      */
     static func toECommerceAmount(amount: [Any]) throws -> YMMECommerceAmount {
         guard
-            let value = amount[0] as? Double,
+            let value = amount[0] as? NSNumber,
             let unit  = amount[1] as? String
         else {
             throw ValidationError.incorrectAmount
@@ -218,7 +251,7 @@ class Converter {
         
         let yamAmount = YMMECommerceAmount(
             unit:  unit,
-            value: NSDecimalNumber(value: value)
+            value: NSDecimalNumber(value: value.doubleValue)
         )
         
         return yamAmount
@@ -234,6 +267,8 @@ extension Converter.ValidationError: LocalizedError {
             return NSLocalizedString("Incorrect amount", comment: "Incorrect amount value")
         case .incorrectSkuProduct:
             return NSLocalizedString("Incorrect SKU product", comment: "Incorrect SKU product")
+        case .incorrectProductItemQty:
+            return NSLocalizedString("Incorrect product qantity", comment: "Incorrect cart product item quantity")
         case .unknown:
             return NSLocalizedString("Unknown", comment: "Unknown")
         }

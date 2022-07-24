@@ -114,5 +114,41 @@ public class AppMetrica: CAPPlugin {
             call.error("Undefined error")
         }
     }
-
+    
+    
+    /**
+     * eCommerce: Добавление товара в корзину
+     */
+    @objc func addCartItemEvent(_ call: CAPPluginCall) {
+        do {
+            let cartItem = try Converter.toECommerceCartItem(item: call.options)
+            YMMYandexMetrica.report(eCommerce: .addCartItemEvent(cartItem: cartItem), onFailure: nil)
+            
+            call.success();
+        }
+        catch let e as Converter.ValidationError {
+            call.error(e.errorDescription ?? "Undefined error")
+        }
+        catch {
+            call.error("Undefined error")
+        }
+    }
+    
+    /**
+     * eCommerce: Удаление товара из корзины
+     */
+    @objc func removeCartItemEvent(_ call: CAPPluginCall) {
+        do {
+            let cartItem = try Converter.toECommerceCartItem(item: call.options)
+            YMMYandexMetrica.report(eCommerce: .removeCartItemEvent(cartItem: cartItem), onFailure: nil)
+            
+            call.success();
+        }
+        catch let e as Converter.ValidationError {
+            call.error(e.errorDescription ?? "Undefined error")
+        }
+        catch {
+            call.error("Undefined error")
+        }
+    }
 }
