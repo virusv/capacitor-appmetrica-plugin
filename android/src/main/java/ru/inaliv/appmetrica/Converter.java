@@ -181,14 +181,14 @@ public class Converter {
      * {
      *     "name": "ProductCardActivity",
      *     "searchQuery": "даниссимо кленовый сироп",
-     *     "сategoriesPath": ["Акции", "Красная цена"],
+     *     "categoriesPath": ["Акции", "Красная цена"],
      *     "payload": {
      *         "ключ": "текстовое значение",
      *         ...
      *     }
      * }
      *
-     * NOTE: В SDK для iOS "сategoriesPath" называется "categoryComponents"
+     * NOTE: В SDK для iOS "categoriesPath" называется "categoryComponents"
      *
      * @param screen
      * @return
@@ -205,8 +205,8 @@ public class Converter {
             yamScreen.setSearchQuery(screen.getString("searchQuery"));
         }
 
-        if (screen.has("сategoriesPath")) {
-            yamScreen.setCategoriesPath(toStringList(screen.getJSONArray("сategoriesPath")));
+        if (screen.has("categoriesPath")) {
+            yamScreen.setCategoriesPath(toStringList(screen.getJSONArray("categoriesPath")));
         }
 
         if (screen.has("payload")) {
