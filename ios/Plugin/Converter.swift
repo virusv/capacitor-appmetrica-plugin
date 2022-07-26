@@ -23,7 +23,7 @@ class Converter {
     /*
      * Конвертирует JSObject конфигурацию в объект конфигурации для AppMetrika
      */
-    static func toConfig(config: NSDictionary) throws -> YMMYandexMetricaConfiguration {
+    static func toConfig(config: [AnyHashable: Any]) throws -> YMMYandexMetricaConfiguration {
         guard let apiKey = config["apiKey"] as? String else {
             throw ValidationError.apiKeyNotDefined
         }
@@ -54,7 +54,7 @@ class Converter {
             yamConfig.logs = logs
         }
         
-        if let location = config["location"] as? NSDictionary {
+        if let location = config["location"] as? [AnyHashable: Any] {
             yamConfig.location = self.toLocation(location: location)
         }
         
@@ -64,7 +64,7 @@ class Converter {
     /*
      * Конвертирует JSObject в объект местоположения
      */
-    static func toLocation(location: NSDictionary) -> CLLocation {
+    static func toLocation(location: [AnyHashable: Any]) -> CLLocation {
         let latitude        = location["latitude"]  as? Double   ?? 0.0
         let longitude       = location["longitude"] as? Double   ?? 0.0
         let altitude        = location["altitude"]  as? Double   ?? 0.0

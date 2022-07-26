@@ -57,7 +57,7 @@ public class AppMetrica: CAPPlugin {
      */
     @objc func activate(_ call: CAPPluginCall) {
         do {
-            let config = try Converter.toConfig(config: call.options as NSDictionary)
+            let config = try Converter.toConfig(config: call.options)
             YMMYandexMetrica.activate(with: config)
             
             call.success()
@@ -99,6 +99,27 @@ public class AppMetrica: CAPPlugin {
         call.success();
     }
     
+    /*
+     * Задать объект Location для метрики
+     */
+    @objc func setLocation(_ call: CAPPluginCall) {
+        let location = Converter.toLocation(location: call.options)
+        
+        YMMYandexMetrica.setLocation(location)
+        
+        call.success()
+    }
+    
+    /*
+     * Отслеживание местоположения (вкл/выкл)
+     */
+    @objc func setLocationTracking(_ call: CAPPluginCall) {
+        let enabled = call.getBool("enabled") ?? true
+        
+        YMMYandexMetrica.setLocationTracking(enabled)
+        
+        call.success()
+    }
     
     /**
      * eCommerce: Открытие страницы

@@ -14,4 +14,6 @@ CAP_PLUGIN(AppMetrica, "AppMetrica",
            CAP_PLUGIN_METHOD(removeCartItemEvent, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(beginCheckoutEvent, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(purchaseEvent, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(setLocation, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(setLocationTracking, CAPPluginReturnPromise);
 )
