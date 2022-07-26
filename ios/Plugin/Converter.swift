@@ -20,7 +20,7 @@ class Converter {
         case unknown
     }
     
-    /**
+    /*
      * Конвертирует JSObject конфигурацию в объект конфигурации для AppMetrika
      */
     static func toConfig(config: NSDictionary) throws -> YMMYandexMetricaConfiguration {
@@ -61,18 +61,18 @@ class Converter {
         return yamConfig
     }
     
-    /**
+    /*
      * Конвертирует JSObject в объект местоположения
      */
     static func toLocation(location: NSDictionary) -> CLLocation {
-        let latitude = location["latitude"] as? Double ?? 0.0
-        let longitude = location["longitude"] as? Double ?? 0.0
-        let altitude = location["altitude"] as? Double ?? 0.0
-        let hAccuracy = location["hAccuracy"] as? Double ?? location["accuracy"] as? Double ?? 0.0
-        let vAccuracy = location["vAccuracy"] as? Double ?? 0.0
-        let timestampNumber = location["timestamp"] as? NSNumber ?? 0.0
-        let course = location["course"] as? Double ?? 0.0
-        let speed = location["speed"] as? Double ?? 0.0
+        let latitude        = location["latitude"]  as? Double   ?? 0.0
+        let longitude       = location["longitude"] as? Double   ?? 0.0
+        let altitude        = location["altitude"]  as? Double   ?? 0.0
+        let hAccuracy       = location["hAccuracy"] as? Double   ?? location["accuracy"] as? Double ?? 0.0
+        let vAccuracy       = location["vAccuracy"] as? Double   ?? -1
+        let timestampNumber = location["timestamp"] as? NSNumber ?? -1
+        let course          = location["course"]    as? Double   ?? 0.0
+        let speed           = location["speed"]     as? Double   ?? 0.0
         
         let locationDate = Date(timeIntervalSince1970: timestampNumber.doubleValue)
         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -90,12 +90,12 @@ class Converter {
         return yamLocation
     }
     
-    /**
+    /*
      * From:
      * {
      *     "name": "ProductCardActivity",
      *     "searchQuery": "даниссимо кленовый сироп",
-     *     "сategoriesPath": ["Акции", "Красная цена"],
+     *     "categoriesPath": ["Акции", "Красная цена"],
      *     "payload": {
      *         "ключ": "текстовое значение",
      *         ...
@@ -107,7 +107,7 @@ class Converter {
     static func toECommerceScreen(screen: [AnyHashable: Any]) -> YMMECommerceScreen {
         let yamScreen = YMMECommerceScreen(
             name:               screen["name"] as? String,
-            categoryComponents: screen["сategoriesPath"] as? [String],
+            categoryComponents: self.toStringArray(screen["categoriesPath"]),
             searchQuery:        screen["searchQuery"] as? String,
             payload:            screen["payload"] as? [String:String]
         )
@@ -115,13 +115,13 @@ class Converter {
         return yamScreen
     }
     
-    /**
+    /*
      * From:
      * {
      *     "sku": "779213",              // [!] Обязательный
      *     "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
-     *     "actualPrice": { ... },      // Смотри структуру toECommercePrice()
-     *     "originalPrice": { ... },    // Смотри структуру toECommercePrice()
+     *     "actualPrice": { ... },       // Смотри структуру toECommercePrice()
+     *     "originalPrice": { ... },     // Смотри структуру toECommercePrice()
      *     "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
      *     "promocodes": ["BT79IYX", "UT5412EP"],
      *     "payload": {
@@ -149,23 +149,23 @@ class Converter {
         let yamProduct = YMMECommerceProduct(
             sku:                sku,
             name:               product["name"] as? String,
-            categoryComponents: product["сategoriesPath"] as? [String],
+            categoryComponents: self.toStringArray(product["categoriesPath"]),
             payload:            product["payload"] as? [String:String],
             actualPrice:        actualPrice,
             originalPrice:      originalPrice,
-            promoCodes:         product["promoCodes"] as? [String]
+            promoCodes:         self.toStringArray(product["promocodes"])
         )
         
         return yamProduct
     }
     
-    /**
+    /*
      * From:
      * {
-     *     "product": { ... },   // [!] Обязательный. Смотри структуру toECommerceProduct()
+     *     "product": { ... },  // [!] Обязательный. Смотри структуру toECommerceProduct()
      *     "revenue": { ... },  // [!] Обязательный. Получаемый доход. Смотри структуру toECommercePrice()
      *     "quantity": 1.0,     // [!] Обязательный.
-     *     "referrer": { ... }    // Смотри структуру toECommerceReferrer()
+     *     "referrer": { ... }  // Смотри структуру toECommerceReferrer()
      * }
      */
     static func toECommerceCartItem(item: [AnyHashable: Any]) throws -> YMMECommerceCartItem {
@@ -191,12 +191,12 @@ class Converter {
         return yamCartItem
     }
     
-    /**
+    /*
      * From:
      * {
      *     "identifier": "88528768",     [!] Обязательный.
-     *     "cartItems": [                     [!] Обязательный.
-     *          { ... },                       Смотри структуру toECommerceCartItem()
+     *     "cartItems": [                [!] Обязательный.
+     *          { ... },                 Смотри структуру toECommerceCartItem()
      *          ...
      *     ],
      *     "payload": {
@@ -227,7 +227,7 @@ class Converter {
         return yamOrder
     }
     
-    /**
+    /*
      * From:
      * {
      *     "type": "button",
@@ -251,7 +251,7 @@ class Converter {
         return yamReferrer
     }
     
-    /**
+    /*
      * From:
      * {
      *     "fiat": [4.53, "USD"],      // [!] Обязательный
@@ -275,7 +275,7 @@ class Converter {
         return actualPrice
     }
     
-    /**
+    /*
      * From:
      * [10.5, "USD"]
      */
@@ -293,6 +293,23 @@ class Converter {
         )
         
         return yamAmount
+    }
+    
+    static func toStringArray(_ rawItems: Any?) -> [String]? {
+        guard let items = rawItems as? NSArray else {
+            return nil
+        }
+        
+        var preparedItems = [String]()
+
+        for rawItem in items {
+            // Skip no String() items
+            if let strItem = rawItem as? String {
+                preparedItems.append(strItem)
+            }
+        }
+
+        return preparedItems
     }
 }
 
