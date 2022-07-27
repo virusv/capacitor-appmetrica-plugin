@@ -129,7 +129,7 @@ public class AppMetrica extends Plugin {
      */
     @PluginMethod
     public void setLocationTracking(PluginCall call) {
-        final boolean enabled = call.getBoolean("enabled");
+        final boolean enabled = call.getBoolean("enabled", true);
         YandexMetrica.setLocationTracking(enabled);
         call.success();
     }
