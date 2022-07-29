@@ -1,12 +1,387 @@
-# Плагин App Metrica для Capacitor 2
+# Плагин App Metrica для Capacitor
+
+- На данный момент поддерживается только версия Capacitor 2.
+- Работает на платформах: iOS, Android.
+- Поддерживает E-Commerce события
+- Deeplinks (не тестровались)
+- Locations (не тестровались)
 
 
+## Демо приложение
 
-### Android SDK
-docs: https://appmetrica.yandex.ru/docs/mobile-sdk-dg/android/about/android-initialize.html
-ecommerce: https://appmetrica.yandex.ru/docs/data-collection/sending-ecommerce-android.html
+[Ссылка на репозиторий](https://github.com/virusv/capacitor-appmetrica-demoapp)
 
-### iOS SDK
-docs: https://appmetrica.yandex.ru/docs/mobile-sdk-dg/ios/ios-quickstart.html
-ecommerce: https://appmetrica.yandex.ru/docs/data-collection/sending-ecommerce-ios.html
-deeplinks: https://appmetrica.yandex.ru/docs/data-collection/tracking-deeplink-ios.html
+## Установка
+```bash
+npm install capacitor-appmetrica-plugin
+
+npx cap sync ios
+npx cap sync android
+```
+
+#### Android
+Открыть файл: `android/app/src/main/java/**/MainActivity.java`
+
+```java
+// ...
+import ru.inaliv.appmetrica.AppMetrica;
+public class MainActivity extends BridgeActivity {
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    // Initializes the Bridge
+    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
+      add(AppMetrica.class); // Инициализировать плагин
+      // ...
+    }});
+  }
+}
+```
+
+**Настройка геолокации (опционально)**
+
+Подробнее: [ссылка](https://appmetrica.yandex.ru/docs/mobile-sdk-dg/android/about/android-initialize.html#step4)
+
+Открыть файл: `android/app/src/main/AndroidManifest.xml`
+```xml
+<manifest>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <application>...</application>
+</manifest>
+```
+
+---------------------------------------
+
+## Использование
+
+Создать новое приложение и получить ключ [здесь](https://appmetrica.yandex.ru/application/new).
+
+### Конфигурация/Активация
+
+```ts
+import { Plugins } from '@capacitor/core';
+
+const { AppMetricaPlugin } = Plugins;
+
+AppMetrica.activate({
+  apiKey: "<API key приложения>",
+}).then(() => {
+  // Успешная активация
+}).catch(() => {
+  // Что-то пошло не так
+});
+
+```
+
+### Отправка событий
+
+Простое событие:
+```ts
+AppMetrica.reportEvent({
+  name: "Имя события",
+  params: {
+    "ключ": "значение"
+  }
+});
+```
+
+Событие ошибки:
+```ts
+AppMetrica.reportError({
+  name: "Имя ошибки",
+  error: "Описание ошибки"
+})
+```
+
+### E-Commerce события
+
+<details>
+  <summary>Открытие страницы</summary>
+  
+  ```ts
+  const screen: ECommerceScreen = {
+    "name": "ProductCardActivity",
+    "searchQuery": "даниссимо кленовый сироп",
+    "categoriesPath": ["Акции", "Красная цена"],
+    "payload": {
+        "full_screen": "true",
+    }
+  };
+
+  AppMetrica.showScreenEvent(screen);
+  ```
+</details>
+
+<details>
+  <summary>Просмотр карточки товара</summary>
+  
+  ```ts
+  const screen: ECommerceScreen = {
+    "name": "ProductCardActivity",
+    "searchQuery": "даниссимо кленовый сироп",
+    "categoriesPath": ["Акции", "Красная цена"],
+    "payload": {
+        "full_screen": "true",
+    }
+  };
+
+  const actualPrice: ECommercePrice = {
+    "fiat": [4.53, "USD"],
+    "internalComponents": [
+      [30570000, "wood"],
+      [26.89, "iron"],
+      [5.1, "gold"]
+    ]
+  };
+
+  const product: ECommerceProduct = {
+    "sku": "779213",
+    "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
+    "actualPrice": actualPrice,
+    "originalPrice": {
+      "fiat": [5.78, "USD"],
+      "internalComponents": [
+        [30590000, "wood"],
+        [26.92, "iron"],
+        [5.5, "gold"],
+      ]
+    },
+    "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
+    "promocodes": ["BT79IYX", "UT5412EP"],
+    "payload": {
+      "full_screen": "true",
+    }
+  };
+
+  AppMetrica.showProductCardEvent({ product, screen });
+  ```
+</details>
+
+<details>
+  <summary>Просмотр страницы товара</summary>
+
+  ```ts
+  const screen: ECommerceScreen = {
+    "name": "ProductCardActivity",
+    "searchQuery": "даниссимо кленовый сироп",
+    "categoriesPath": ["Акции", "Красная цена"],
+    "payload": {
+        "full_screen": "true",
+    }
+  };
+
+  const actualPrice: ECommercePrice = {
+    "fiat": [4.53, "USD"],
+    "internalComponents": [
+      [30570000, "wood"],
+      [26.89, "iron"],
+      [5.1, "gold"]
+    ]
+  };
+
+  const product: ECommerceProduct = {
+    "sku": "779213",
+    "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
+    "actualPrice": actualPrice,
+    "originalPrice": {
+      "fiat": [5.78, "USD"],
+      "internalComponents": [
+        [30590000, "wood"],
+        [26.92, "iron"],
+        [5.5, "gold"],
+      ]
+    },
+    "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
+    "promocodes": ["BT79IYX", "UT5412EP"],
+    "payload": {
+      "full_screen": "true",
+    }
+  };
+
+  const referrer: ECommerceReferrer = {
+    "type": "button",
+    "identifier": "76890",
+    "screen": screen
+  };
+
+  AppMetrica.showProductDetailsEvent({ product, referrer });
+  ```
+</details>
+
+<details>
+  <summary>Добавление или удаление товара из корзины</summary>
+
+  ```ts
+  const screen: ECommerceScreen = {
+    "name": "ProductCardActivity",
+    "searchQuery": "даниссимо кленовый сироп",
+    "categoriesPath": ["Акции", "Красная цена"],
+    "payload": {
+        "full_screen": "true",
+    }
+  };
+
+  const actualPrice: ECommercePrice = {
+    "fiat": [4.53, "USD"],
+    "internalComponents": [
+      [30570000, "wood"],
+      [26.89, "iron"],
+      [5.1, "gold"]
+    ]
+  };
+
+  const product: ECommerceProduct = {
+    "sku": "779213",
+    "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
+    "actualPrice": actualPrice,
+    "originalPrice": {
+      "fiat": [5.78, "USD"],
+      "internalComponents": [
+        [30590000, "wood"],
+        [26.92, "iron"],
+        [5.5, "gold"],
+      ]
+    },
+    "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
+    "promocodes": ["BT79IYX", "UT5412EP"],
+    "payload": {
+      "full_screen": "true",
+    }
+  };
+
+  const referrer: ECommerceReferrer = {
+    "type": "button",
+    "identifier": "76890",
+    "screen": screen
+  };
+
+  const addedItem: ECommerceCartItem = {
+    product,
+    referrer,
+    quantity: 1.0,
+    revenue: actualPrice
+  };
+
+  // Добавление
+  AppMetrica.addCartItemEvent(addedItem);
+
+  // Удаление
+  AppMetrica.removeCartItemEvent(addedItem);
+  ```
+</details>
+
+<details>
+  <summary>Начало оформления и завершение покупки</summary>
+
+  ```ts
+  const screen: ECommerceScreen = {
+    "name": "ProductCardActivity",
+    "searchQuery": "даниссимо кленовый сироп",
+    "categoriesPath": ["Акции", "Красная цена"],
+    "payload": {
+        "full_screen": "true",
+    }
+  };
+
+  const actualPrice: ECommercePrice = {
+    "fiat": [4.53, "USD"],
+    "internalComponents": [
+      [30570000, "wood"],
+      [26.89, "iron"],
+      [5.1, "gold"]
+    ]
+  };
+
+  const product: ECommerceProduct = {
+    "sku": "779213",
+    "name": "Продукт творожный «Даниссимо» 5.9%, 130 г.",
+    "actualPrice": actualPrice,
+    "originalPrice": {
+      "fiat": [5.78, "USD"],
+      "internalComponents": [
+        [30590000, "wood"],
+        [26.92, "iron"],
+        [5.5, "gold"],
+      ]
+    },
+    "categoriesPath": ["Продукты", "Молочные продукты", "Йогурты"],
+    "promocodes": ["BT79IYX", "UT5412EP"],
+    "payload": {
+      "full_screen": "true",
+    }
+  };
+
+  const referrer: ECommerceReferrer = {
+    "type": "button",
+    "identifier": "76890",
+    "screen": screen
+  };
+
+  const addedItem: ECommerceCartItem = {
+    product,
+    referrer,
+    quantity: 1.0,
+    revenue: actualPrice
+  };
+
+  const order: ECommerceOrder = {
+    "identifier": "88528768",
+    "cartItems": [
+      addedItem,
+      // ...
+    ],
+    "payload": ["black_friday": "true"]
+  };
+
+  // Начало оформления
+  AppMetrica.beginCheckoutEvent(order);
+
+  // Завершение покупки
+  AppMetrica.purchaseEvent(order);
+  ```
+</details>
+
+
+### Местоположение
+
+<details>
+  <summary>Установить информацию о местоположении устройства</summary>
+
+  ```ts
+  const location: YAMLocation = {
+    latitude: 51.660781
+    longitude: 39.200296
+
+    // altitude?: number;
+    // accuracy?: number;
+    // vAccuracy?: number;
+    // hAccuracy?: number;
+    // course?: number;
+    // speed?: number;
+    // timestamp?: number;
+  };
+
+  AppMetrica.setLocation(location);
+  ```
+</details>
+
+<details>
+  <summary>Включить/отключить отправку информации о местоположении устройства</summary>
+
+  ```ts
+  AppMetrica.setLocationTracking({ enabled: true });
+  ```
+</details>
+
+---------------------------------------
+
+## Документация
+
+#### Android SDK
+* [docs](https://appmetrica.yandex.ru/docs/mobile-sdk-dg/android/about/android-initialize.html)
+* [ecommerce](https://appmetrica.yandex.ru/docs/data-collection/sending-ecommerce-android.html)
+
+#### iOS SDK
+* [docs](https://appmetrica.yandex.ru/docs/mobile-sdk-dg/ios/ios-quickstart.html)
+* [ecommerce](https://appmetrica.yandex.ru/docs/data-collection/sending-ecommerce-ios.html)
+* [deeplinks](https://appmetrica.yandex.ru/docs/data-collection/tracking-deeplink-ios.html)
