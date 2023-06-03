@@ -288,7 +288,7 @@ public class AppMetrica extends Plugin {
     //-------------------- USER PROFILE ---------------------------------------
 
     /**
-     * User: Отправка идентификатора  профиля
+     * User Profile: Отправка идентификатора профиля
      *
      * @param call
      */
@@ -303,6 +303,11 @@ public class AppMetrica extends Plugin {
         }
     }
 
+    /**
+     * User Profile: Отправка атрибутов профиля
+     *
+     * @param call
+     */
     @PluginMethod
     public void reportUserProfile(final PluginCall call) {
         try {

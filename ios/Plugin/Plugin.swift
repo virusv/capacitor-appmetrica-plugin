@@ -247,7 +247,7 @@ public class AppMetrica: CAPPlugin {
     }
     
     /**
-     * User:  Отправка идентификатора  профиля
+     * User Profile:  Отправка идентификатора  профиля
      */
     @objc func setUserProfileId(_ call: CAPPluginCall) {
         if let userId = call.options["id"] as? String {
@@ -259,7 +259,7 @@ public class AppMetrica: CAPPlugin {
     }
     
     /**
-     * User:  Отправка атрибутов профиля
+     * User Profile:  Отправка атрибутов профиля
      */
     @objc func reportUserProfile(_ call: CAPPluginCall) {
         do {

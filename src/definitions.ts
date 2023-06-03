@@ -87,6 +87,20 @@ export interface AppMetricaPlugin {
    * @param order 
    */
   purchaseEvent(order: ECommerceOrder): Promise<void>;
+
+  /**
+   * User Profile: Отправка идентификатора профиля
+   * 
+   * @param userProfileId 
+   */
+  setUserProfileId(userProfileId: YAMUserProfileId): Promise<void>;
+
+  /**
+   * User Profile: Отправка атрибутов профиля
+   * 
+   * @param userProfile 
+   */
+  reportUserProfile(userProfile: YAMUserProfile): Promise<void>;
 }
 
 //#region Share App Merika
@@ -396,5 +410,29 @@ export interface ECommerceOrder {
    * - размер value: до 1000 символов.
    */
   payload?: ECommercePayload;
+}
+//#endregion
+
+//#region User Profile
+export type YAMGenderType = 'male'|'female'|'other';
+export interface YAMUserProfileBirthDate {
+  year: number;
+  month?: number;
+  day?: number;
+}
+
+export interface YAMUserProfileAge {
+  age: number;
+}
+
+export interface YAMUserProfileId {
+  id: string;
+}
+
+export interface YAMUserProfile {
+  name?: string;
+  gender?: YAMGenderType;
+  notificationEnabled?: boolean;
+  birthDate?: YAMUserProfileBirthDate|YAMUserProfileAge;
 }
 //#endregion

@@ -481,7 +481,7 @@ public class Converter {
                     yamBirthDate = Attribute.birthDate().withBirthDate(year);
                 }
             } else if (birthDate.has("age")) {
-                int age = birthDate.getInt("day");
+                int age = birthDate.getInt("age");
 
                 yamBirthDate = Attribute.birthDate().withAge(age);
             }

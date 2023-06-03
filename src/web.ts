@@ -44,6 +44,12 @@ export class AppMetricaWeb extends WebPlugin implements AppMetricaPlugin {
   purchaseEvent(/*order: ECommerceOrder*/): Promise<void> {
     return Promise.reject('Web not supported. [purchaseEvent()]');
   }
+  setUserProfileId(/*userProfileId: YAMUserProfileId*/): Promise<void> {
+    return Promise.reject('Web not supported. [setUserProfileId()]');
+  }
+  reportUserProfile(/*userProfile: YAMUserProfile*/): Promise<void> {
+    return Promise.reject('Web not supported. [reportUserProfile()]');
+  }
 }
 
 const AppMetrica = new AppMetricaWeb();
