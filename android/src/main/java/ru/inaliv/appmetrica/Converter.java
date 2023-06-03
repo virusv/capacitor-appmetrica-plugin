@@ -46,6 +46,9 @@ public class Converter {
         if (config.has("crashReporting")) {
             builder.withCrashReporting(config.getBoolean("crashReporting"));
         }
+        if (config.has("nativeCrashReporting")) {
+            builder.withNativeCrashReporting(config.getBoolean("nativeCrashReporting"));
+        }
         if (config.has("appVersion")) {
             builder.withAppVersion(config.getString("appVersion"));
         }
