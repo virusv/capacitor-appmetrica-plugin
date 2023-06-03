@@ -46,7 +46,8 @@
     "appmetrica",
     "metrica",
     "analytics",
-    "tracking"
+    "tracking",
+    "ionic"
   ],
   "capacitor": {
     "ios": {
