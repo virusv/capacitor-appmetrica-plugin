@@ -18,6 +18,7 @@ import com.yandex.metrica.ecommerce.ECommerceOrder;
 import com.yandex.metrica.ecommerce.ECommerceProduct;
 import com.yandex.metrica.ecommerce.ECommerceReferrer;
 import com.yandex.metrica.ecommerce.ECommerceScreen;
+import com.yandex.metrica.profile.UserProfile;
 
 import org.json.JSONException;
 import java.util.concurrent.ExecutorService;
@@ -37,12 +38,12 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void activate(PluginCall call) {
+    public void activate(final PluginCall call) {
         final YandexMetricaConfig config;
         try {
             config = Converter.toConfig(call.getData());
         } catch (JSONException e) {
-            call.error("Failed to activate metric: " + e.getMessage());
+            call.reject("Failed to activate metric: " + e.getMessage());
             return;
         }
         final Context context = getBridge().getActivity().getApplicationContext();
@@ -60,7 +61,7 @@ public class AppMetrica extends Plugin {
 
             mAppMetricaActivated = true;
 
-            call.success();
+            call.resolve();
         }
     }
 
@@ -70,7 +71,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void reportEvent(PluginCall call) {
+    public void reportEvent(final PluginCall call) {
         final String evName = call.getString("name");
 
         if (call.hasOption("params")) {
@@ -81,7 +82,7 @@ public class AppMetrica extends Plugin {
             YandexMetrica.reportEvent(evName);
         }
 
-        call.success();
+        call.resolve();
     }
 
     /**
@@ -89,7 +90,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void reportError(PluginCall call) {
+    public void reportError(final PluginCall call) {
         final String group = call.hasOption("group")
                 ? call.getString("group")
                 : call.getString("name"); // Legacy
@@ -113,7 +114,7 @@ public class AppMetrica extends Plugin {
             YandexMetrica.reportError(message, errorThrowable);
         }
 
-        call.success();
+        call.resolve();
     }
 
     /**
@@ -122,15 +123,16 @@ public class AppMetrica extends Plugin {
      * @throws JSONException
      */
     @PluginMethod
-    public void setLocation(PluginCall call) {
+    public void setLocation(final PluginCall call) {
         final JSObject locationObj = call.getData();
 
         try {
             final Location location = Converter.toLocation(locationObj);
             YandexMetrica.setLocation(location);
-            call.success();
+
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -139,10 +141,11 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void setLocationTracking(PluginCall call) {
+    public void setLocationTracking(final PluginCall call) {
         final boolean enabled = call.getBoolean("enabled", true);
         YandexMetrica.setLocationTracking(enabled);
-        call.success();
+
+        call.resolve();
     }
 
     //-------------------- ECOMMERCE ------------------------------------------
@@ -153,16 +156,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void showScreenEvent(PluginCall call) {
+    public void showScreenEvent(final PluginCall call) {
         try {
             ECommerceScreen screen = Converter.toECommerceScreen(call.getData());
 
             ECommerceEvent showScreenEvent = ECommerceEvent.showScreenEvent(screen);
             YandexMetrica.reportECommerce(showScreenEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -172,7 +175,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void showProductCardEvent(PluginCall call) {
+    public void showProductCardEvent(final PluginCall call) {
         try {
             ECommerceProduct product = Converter.toECommerceProduct(call.getObject("product"));
             ECommerceScreen screen = Converter.toECommerceScreen(call.getObject("screen"));
@@ -180,9 +183,9 @@ public class AppMetrica extends Plugin {
             ECommerceEvent showProductCardEvent = ECommerceEvent.showProductCardEvent(product, screen);
             YandexMetrica.reportECommerce(showProductCardEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -192,7 +195,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void showProductDetailsEvent(PluginCall call) {
+    public void showProductDetailsEvent(final PluginCall call) {
         try {
             ECommerceProduct product = Converter.toECommerceProduct(call.getObject("product"));
             ECommerceReferrer referrer = Converter.toECommerceReferrer(call.getObject("referrer"));
@@ -200,9 +203,9 @@ public class AppMetrica extends Plugin {
             ECommerceEvent showProductDetailsEvent = ECommerceEvent.showProductDetailsEvent(product, referrer);
             YandexMetrica.reportECommerce(showProductDetailsEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -212,16 +215,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void addCartItemEvent(PluginCall call) {
+    public void addCartItemEvent(final PluginCall call) {
         try {
             ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
 
             ECommerceEvent addCartItemEvent = ECommerceEvent.addCartItemEvent(cartItem);
             YandexMetrica.reportECommerce(addCartItemEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -231,16 +234,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void removeCartItemEvent(PluginCall call) {
+    public void removeCartItemEvent(final PluginCall call) {
         try {
             ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
 
             ECommerceEvent removeCartItemEvent = ECommerceEvent.removeCartItemEvent(cartItem);
             YandexMetrica.reportECommerce(removeCartItemEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -250,16 +253,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void beginCheckoutEvent(PluginCall call) {
+    public void beginCheckoutEvent(final PluginCall call) {
         try {
             ECommerceOrder order = Converter.toECommerceOrder(call.getData());
 
             ECommerceEvent beginCheckoutEvent = ECommerceEvent.beginCheckoutEvent(order);
             YandexMetrica.reportECommerce(beginCheckoutEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -269,16 +272,46 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void purchaseEvent(PluginCall call) {
+    public void purchaseEvent(final PluginCall call) {
         try {
             ECommerceOrder order = Converter.toECommerceOrder(call.getData());
 
             ECommerceEvent purchaseEvent = ECommerceEvent.purchaseEvent(order);
             YandexMetrica.reportECommerce(purchaseEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
+        }
+    }
+
+    //-------------------- USER PROFILE ---------------------------------------
+
+    /**
+     * User: Отправка идентификатора  профиля
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void setUserProfileId(final PluginCall call) {
+        if (call.hasOption("id")) {
+            YandexMetrica.setUserProfileID(call.getString("id"));
+
+            call.resolve();
+        } else {
+            call.reject("Не передан обязательный идентификатор профиля");
+        }
+    }
+
+    @PluginMethod
+    public void reportUserProfile(final PluginCall call) {
+        try {
+            UserProfile userProfile = Converter.toUserProfile(call.getData());
+            YandexMetrica.reportUserProfile(userProfile);
+
+            call.resolve();
+        } catch (JSONException e) {
+            call.reject(e.getMessage());
         }
     }
 

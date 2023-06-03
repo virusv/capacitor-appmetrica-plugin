@@ -249,12 +249,12 @@ public class AppMetrica: CAPPlugin {
     /**
      * User:  Отправка идентификатора  профиля
      */
-    @objc func setUserProfileID(_ call: CAPPluginCall) {
+    @objc func setUserProfileId(_ call: CAPPluginCall) {
         if let userId = call.options["id"] as? String {
             YMMYandexMetrica.setUserProfileID(userId)
             call.resolve()
         } else {
-            call.reject("Не передан обязательный идентификатор")
+            call.reject("Не передан обязательный идентификатор профиля")
         }
     }
     

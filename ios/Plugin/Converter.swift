@@ -313,7 +313,8 @@ class Converter {
     }
     
     /*
-     * From: {
+     * From:
+     * {
      *   "name": "Ivan Nalivayko",
      *   "gender": "male",
      *   "notificationEnabled": false,
@@ -373,7 +374,7 @@ class Converter {
     }
     
     static func toGenderType(_ gender: String) -> YMMGenderType {
-        if gender == "famale" {
+        if gender == "female" {
             return YMMGenderType.female
         }
         
