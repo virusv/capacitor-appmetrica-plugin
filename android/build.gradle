@@ -50,4 +50,5 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation "com.yandex.android:mobmetricalib:5.3.0"
+    implementation 'com.yandex.android:mobmetricalib-ndk-crashes:2.0.0'
 }
