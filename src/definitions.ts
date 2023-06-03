@@ -117,9 +117,15 @@ export interface YAMConfig {
   sessionTimeout?: number;
 
   /**
-   * Включает/отключает сбор и отправку информации об аварийных остановках приложения
+   * Сбор и отправка информации об аварийных остановках приложения
    */
   crashReporting?: boolean;
+
+  /**
+   * Сбор и отправка информации об нативных аварийных остановках приложения (по умолчанию активен)
+   * Только Android!
+   */
+  nativeCrashReporting?: boolean;
 
   /**
    * Включает/отключает логирование работы библиотеки
@@ -201,8 +207,22 @@ export interface YAMReportEventOptions {
 }
 
 export interface YAMReportErrorOptions {
-  name: string;
+  /** @deprecated Используйте group */
+  name?: string;
+
+  /** @deprecated Используйте message */
   error?: string;
+
+  /** Идентификатор группы */
+  group: string;
+
+  /** Сообщение ошибки */
+  message?: string;
+
+  /** Дополнительные параметры */
+  parameters?: {
+    [ptop: string]: string;
+  };
 }
 
 export interface YAMShowProductCardEventOptions {

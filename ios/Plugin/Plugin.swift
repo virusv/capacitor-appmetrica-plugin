@@ -82,19 +82,19 @@ public class AppMetrica: CAPPlugin {
      * Отправляет ошибку в App метрику
      */
     @objc func reportError(_ call: CAPPluginCall) {
-        let errorName = call.getString("name") ?? "Undefined";
-        let errorMessage = call.getString("error");
+        let group = call.getString("group") ?? call.getString("name") ?? "Undefined"
+        let message = call.getString("message") ?? call.getString("error") ?? nil
+        let parameters = call.getObject("parameters", defaultValue: [:])
         
-        let underlyingError = YMMError.init(identifier: "Underlying YMMError")
-        let error = YMMError(
-            identifier: errorName,
-            message: errorMessage,
-            parameters: nil, // Android not supported
+        let yandexError = YMMError(
+            identifier: group,
+            message: message,
+            parameters: parameters,
             backtrace: Thread.callStackReturnAddresses,
-            underlyingError: underlyingError
+            underlyingError: nil
         )
         
-        YMMYandexMetrica.report(error: error, onFailure: nil)
+        YMMYandexMetrica.report(error: yandexError, onFailure: nil)
 
         call.success();
     }

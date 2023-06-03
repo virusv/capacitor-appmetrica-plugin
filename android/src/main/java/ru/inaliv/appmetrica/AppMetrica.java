@@ -90,17 +90,28 @@ public class AppMetrica extends Plugin {
      */
     @PluginMethod
     public void reportError(PluginCall call) {
-        final String errorName = call.getString("name");
+        final String group = call.hasOption("group")
+                ? call.getString("group")
+                : call.getString("name"); // Legacy
+
+        final String message = call.hasOption("message")
+                ? call.getString("message")
+                : call.getString("error"); // Legacy
 
         Throwable errorThrowable = null;
 
-        if (call.hasOption("error")) {
+        if (call.hasOption("parameters")) {
             errorThrowable = new Throwable(
-                call.getString("error")
+                call.getObject("parameters").toString()
             );
         }
 
-        YandexMetrica.reportError(errorName, errorThrowable);
+        if (call.hasOption("group")) {
+            final String groupIdentifier = call.getString("group");
+            YandexMetrica.reportError(groupIdentifier, message, errorThrowable);
+        } else {
+            YandexMetrica.reportError(message, errorThrowable);
+        }
 
         call.success();
     }
