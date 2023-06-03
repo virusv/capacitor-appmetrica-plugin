@@ -311,6 +311,78 @@ class Converter {
 
         return preparedItems
     }
+    
+    /*
+     * From: {
+     *   "name": "Ivan Nalivayko",
+     *   "gender": "male",
+     *   "notificationEnabled": false,
+     *   "birthDate": { // OR: { "age": 20 }
+     *     "year": 2001,
+     *     "month": 1,
+     *     "day": 1
+     *   }
+     * }
+     */
+    static func toUserProfile(user: [AnyHashable: Any]) throws -> YMMMutableUserProfile {
+        let yamProfile = YMMMutableUserProfile()
+        
+        if let name = user["name"] as? String {
+            yamProfile.apply(YMMProfileAttribute.name().withValue(name))
+        }
+        
+        if let gender = user["gender"] as? String {
+            yamProfile.apply(YMMProfileAttribute.gender().withValue(toGenderType(gender)))
+        }
+        
+        if let birthDateParts = user["birthDate"] as? [AnyHashable: Any] {
+            var birthDate: YMMUserProfileUpdate? = nil;
+            
+            if let year = birthDateParts["year"] as? NSNumber as? UInt {
+                if let month = birthDateParts["month"] as? NSNumber as? UInt {
+                    if let day = birthDateParts["day"] as? NSNumber as? UInt {
+                        birthDate = YMMProfileAttribute
+                            .birthDate()
+                            .withDate(year: year, month: month, day: day)
+                    } else {
+                        birthDate = YMMProfileAttribute
+                            .birthDate()
+                            .withDate(year: year, month: month)
+                    }
+                } else {
+                    birthDate = YMMProfileAttribute
+                        .birthDate()
+                        .withDate(year: year)
+                }
+            } else if let age = birthDateParts["age"] as? NSNumber as? UInt {
+                birthDate = YMMProfileAttribute
+                    .birthDate()
+                    .withAge(age)
+            }
+            
+            if birthDate != nil {
+                yamProfile.apply(birthDate!)
+            }
+        }
+        
+        if let notificationEnabled = user["notificationEnabled"] as? Bool {
+            yamProfile.apply(YMMProfileAttribute.notificationsEnabled().withValue(notificationEnabled))
+        }
+        
+        return yamProfile
+    }
+    
+    static func toGenderType(_ gender: String) -> YMMGenderType {
+        if gender == "famale" {
+            return YMMGenderType.female
+        }
+        
+        if gender == "male" {
+            return YMMGenderType.male
+        }
+        
+        return YMMGenderType.other
+    }
 }
 
 extension Converter.ValidationError: LocalizedError {
