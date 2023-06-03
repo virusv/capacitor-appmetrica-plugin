@@ -11,6 +11,10 @@ import com.yandex.metrica.ecommerce.ECommercePrice;
 import com.yandex.metrica.ecommerce.ECommerceProduct;
 import com.yandex.metrica.ecommerce.ECommerceReferrer;
 import com.yandex.metrica.ecommerce.ECommerceScreen;
+import com.yandex.metrica.profile.Attribute;
+import com.yandex.metrica.profile.GenderAttribute;
+import com.yandex.metrica.profile.UserProfile;
+import com.yandex.metrica.profile.UserProfileUpdate;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -416,5 +420,89 @@ public class Converter {
         }
 
         return list;
+    }
+
+    /**
+     * From:
+     * {
+     *   "name": "Ivan Nalivayko",
+     *   "gender": "male",
+     *   "notificationEnabled": false,
+     *   "birthDate": { // OR: { "age": 20 }
+     *     "year": 2001,
+     *     "month": 1,
+     *      "day": 1
+     *   }
+     * }
+     *
+     * @param user
+     * @return
+     * @throws JSONException
+     */
+    public static UserProfile toUserProfile(final JSONObject user) throws JSONException {
+        UserProfile.Builder yamProfileBuilder = UserProfile.newBuilder();
+
+        if (user.has("name")) {
+            yamProfileBuilder.apply(Attribute.name().withValue(
+                user.getString("name")
+            ));
+        }
+
+        if (user.has("gender")) {
+            yamProfileBuilder.apply(Attribute.gender().withValue(
+                toGenderType(user.getString("gender"))
+            ));
+        }
+
+        if (user.has("notificationEnabled")) {
+            yamProfileBuilder.apply(Attribute.notificationsEnabled().withValue(
+                user.getBoolean("notificationEnabled")
+            ));
+        }
+
+        if (user.has("birthDate")) {
+            JSONObject birthDate = user.getJSONObject("birthDate");
+            UserProfileUpdate yamBirthDate = null;
+
+            if (birthDate.has("year")) {
+                int year = birthDate.getInt("year");
+
+                if (birthDate.has("month")) {
+                    int month = birthDate.getInt("month");
+
+                    if (birthDate.has("day")) {
+                        int day = birthDate.getInt("day");
+
+                        yamBirthDate = Attribute.birthDate().withBirthDate(year, month, day);
+                    } else {
+                        yamBirthDate = Attribute.birthDate().withBirthDate(year, month);
+                    }
+                } else {
+                    yamBirthDate = Attribute.birthDate().withBirthDate(year);
+                }
+            } else if (birthDate.has("age")) {
+                int age = birthDate.getInt("age");
+
+                yamBirthDate = Attribute.birthDate().withAge(age);
+            }
+
+            if (yamBirthDate != null) {
+                yamProfileBuilder.apply(yamBirthDate);
+            }
+        }
+
+        return yamProfileBuilder.build();
+    }
+
+    private static GenderAttribute.Gender toGenderType(final String gender) {
+        if (gender == "female") {
+            return GenderAttribute.Gender.FEMALE;
+        }
+
+        if (gender == "male") {
+            return GenderAttribute.Gender.MALE;
+        }
+
+        return GenderAttribute.Gender.OTHER;
     }
 }
