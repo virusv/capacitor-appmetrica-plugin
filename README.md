@@ -1,8 +1,9 @@
-# Плагин App Metrica для Capacitor
+# Плагин Yandex App Metrica для Capacitor
 
-- На данный момент поддерживается только версия Capacitor 2.
+- Данная версия предназначена для Capacitor 2.
 - Работает на платформах: iOS, Android.
 - Поддерживает E-Commerce события
+- Поддерживает отправку атрибутов профиля
 - Deeplinks (не тестровались)
 - Locations (не тестровались)
 
@@ -13,7 +14,7 @@
 
 ## Установка
 ```bash
-npm install capacitor-appmetrica-plugin
+npm install capacitor-appmetrica-plugin@^2.0.0
 
 npx cap sync ios
 npx cap sync android
@@ -88,9 +89,37 @@ AppMetrica.reportEvent({
 Событие ошибки:
 ```ts
 AppMetrica.reportError({
-  name: "Имя ошибки",
-  error: "Описание ошибки"
-})
+  group: "идентификатор_группы",
+  message: "Сообщение ошибки",
+  parameters: { // В Android данные передаются в виде JSON строки внутри Throwable объекта
+    key: "value",
+  }
+});
+```
+
+**WARNING:** Ранее данные события ошибки передавались через поля `name` и `error` - данные значения объявлены как deprecated, будут удалены в следующей версии.
+
+### Отправка атрибутов профиля
+
+Задать идентификатор профиля:
+```ts
+AppMetrica.setUserProfileId({ id: 'user_id_1' })
+```
+
+Отправка атрибутов:
+```ts
+const userProfile: YAMUserProfile = {
+  name: 'Nalivayko Ivan',
+  gender: 'male',
+  notificationEnabled: true,
+  birthDate: { // or { age: 20 }
+    year: 2001,
+    month: 1,
+    day: 1
+  }
+};
+
+AppMetrica.reportUserProfile(userProfile);
 ```
 
 ### E-Commerce события
