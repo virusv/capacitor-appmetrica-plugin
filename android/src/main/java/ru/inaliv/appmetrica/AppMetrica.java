@@ -46,16 +46,15 @@ public class AppMetrica extends Plugin {
             call.reject("Failed to activate metric: " + e.getMessage());
             return;
         }
-        final Context context = getBridge().getActivity().getApplicationContext();
 
-        YandexMetrica.activate(context, config);
+        YandexMetrica.activate(getContext(), config);
 
         synchronized (mLock) {
             if (mAppMetricaActivated == false) {
-                YandexMetrica.reportAppOpen(bridge.getActivity());
+                YandexMetrica.reportAppOpen(getActivity());
 
                 if (mActivityPaused == false) {
-                    YandexMetrica.resumeSession(bridge.getActivity());
+                    YandexMetrica.resumeSession(getActivity());
                 }
             }
 
@@ -328,7 +327,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = false;
             if (mAppMetricaActivated) {
-                YandexMetrica.resumeSession(getBridge().getActivity());
+                YandexMetrica.resumeSession(getActivity());
             }
         }
     }
@@ -340,7 +339,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = true;
             if (mAppMetricaActivated) {
-                YandexMetrica.pauseSession(getBridge().getActivity());
+                YandexMetrica.pauseSession(getActivity());
             }
         }
     }
@@ -354,7 +353,7 @@ public class AppMetrica extends Plugin {
             @Override
             public void run() {
                 if (mAppMetricaActivated) {
-                    YandexMetrica.reportAppOpen(getBridge().getActivity());
+                    YandexMetrica.reportAppOpen(getActivity());
                 }
             }
         });
