@@ -3,15 +3,16 @@ package ru.inaliv.appmetrica;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.app.Activity;
 
 import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.YandexMetricaConfig;
 
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
 import com.yandex.metrica.ecommerce.ECommerceCartItem;
 import com.yandex.metrica.ecommerce.ECommerceEvent;
 import com.yandex.metrica.ecommerce.ECommerceOrder;
@@ -24,7 +25,7 @@ import org.json.JSONException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@NativePlugin
+@CapacitorPlugin(name = "AppMetrica")
 public class AppMetrica extends Plugin {
     private final Object mLock = new Object();
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
@@ -46,16 +47,15 @@ public class AppMetrica extends Plugin {
             call.reject("Failed to activate metric: " + e.getMessage());
             return;
         }
-        final Context context = getBridge().getActivity().getApplicationContext();
 
-        YandexMetrica.activate(context, config);
+        YandexMetrica.activate(getContext(), config);
 
         synchronized (mLock) {
             if (mAppMetricaActivated == false) {
-                YandexMetrica.reportAppOpen(bridge.getActivity());
+                YandexMetrica.reportAppOpen(getActivity());
 
                 if (mActivityPaused == false) {
-                    YandexMetrica.resumeSession(bridge.getActivity());
+                    YandexMetrica.resumeSession(getActivity());
                 }
             }
 
@@ -328,7 +328,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = false;
             if (mAppMetricaActivated) {
-                YandexMetrica.resumeSession(getBridge().getActivity());
+                YandexMetrica.resumeSession(getActivity());
             }
         }
     }
@@ -340,7 +340,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = true;
             if (mAppMetricaActivated) {
-                YandexMetrica.pauseSession(getBridge().getActivity());
+                YandexMetrica.pauseSession(getActivity());
             }
         }
     }
@@ -354,7 +354,7 @@ public class AppMetrica extends Plugin {
             @Override
             public void run() {
                 if (mAppMetricaActivated) {
-                    YandexMetrica.reportAppOpen(getBridge().getActivity());
+                    YandexMetrica.reportAppOpen(getActivity());
                 }
             }
         });
