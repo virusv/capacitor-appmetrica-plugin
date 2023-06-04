@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">capacitor-appmetrica-demoapp</string>
+    <string name="title_activity_main">capacitor-appmetrica-demoapp</string>
+    <string name="package_name">ru.inaliv.demoapp.appmetrica</string>
+    <string name="custom_url_scheme">ru.inaliv.demoapp.appmetrica</string>
+</resources>
