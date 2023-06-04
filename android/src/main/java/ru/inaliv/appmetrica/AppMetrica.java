@@ -8,10 +8,10 @@ import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.YandexMetricaConfig;
 
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
 import com.yandex.metrica.ecommerce.ECommerceCartItem;
 import com.yandex.metrica.ecommerce.ECommerceEvent;
 import com.yandex.metrica.ecommerce.ECommerceOrder;
@@ -24,7 +24,7 @@ import org.json.JSONException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@NativePlugin
+@CapacitorPlugin(name = "AppMetrica")
 public class AppMetrica extends Plugin {
     private final Object mLock = new Object();
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();

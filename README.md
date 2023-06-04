@@ -1,6 +1,6 @@
 # Плагин Yandex App Metrica для Capacitor
 
-- Данная версия предназначена для Capacitor 2.
+- Данная версия предназначена для Capacitor 3+.
 - Работает на платформах: iOS, Android.
 - Поддерживает E-Commerce события
 - Поддерживает отправку атрибутов профиля
@@ -10,33 +10,37 @@
 
 ## Демо приложение
 
-[Ссылка на репозиторий](https://github.com/virusv/capacitor-appmetrica-demoapp)
+```bash
+cd example
+npm install
+npm run start
+```
 
 ## Установка
 ```bash
-npm install capacitor-appmetrica-plugin@^2.0.0
+npm install capacitor-appmetrica-plugin@^3.0.0
 
 npx cap sync ios
 npx cap sync android
 ```
 
 #### Android
-Открыть файл: `android/app/src/main/java/**/MainActivity.java`
+~~Открыть файл: `android/app/src/main/java/**/MainActivity.java`~~
 
 ```java
 // ...
-import ru.inaliv.appmetrica.AppMetrica;
-public class MainActivity extends BridgeActivity {
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    // Initializes the Bridge
-    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-      add(AppMetrica.class); // Инициализировать плагин
-      // ...
-    }});
-  }
-}
+// import ru.inaliv.appmetrica.AppMetrica;
+// public class MainActivity extends BridgeActivity {
+//   @Override
+//   public void onCreate(Bundle savedInstanceState) {
+//     super.onCreate(savedInstanceState);
+//     // Initializes the Bridge
+//     this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
+//       add(AppMetrica.class); // Инициализировать плагин
+//       // ...
+//     }});
+//   }
+// }
 ```
 
 **Настройка геолокации (опционально)**

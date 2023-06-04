@@ -1,9 +1,3 @@
-declare module '@capacitor/core' {
-  interface PluginRegistry {
-    AppMetrica: AppMetricaPlugin;
-  }
-}
-
 export interface AppMetricaPlugin {
   /**
    * Активация метрики
@@ -221,12 +215,6 @@ export interface YAMReportEventOptions {
 }
 
 export interface YAMReportErrorOptions {
-  /** @deprecated Используйте group */
-  name?: string;
-
-  /** @deprecated Используйте message */
-  error?: string;
-
   /** Идентификатор группы */
   group: string;
 
