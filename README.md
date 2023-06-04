@@ -1,30 +1,45 @@
 # Плагин Yandex App Metrica для Capacitor
 
-- Данная версия предназначена для Capacitor 3 - 5.
+- Поддержка Capacitor 2, 3 - 5.
 - Работает на платформах: iOS, Android.
 - Поддерживает E-Commerce события
 - Поддерживает отправку атрибутов профиля
 - Deeplinks (не тестровались)
 - Locations (не тестровались)
 
+**Версии App Metrica SDK:**
+- iOS: **4.5.0**
+- Android: **5.2.0**
 
 ## Демо приложение
 
 ```bash
 cd example
+
 npm install
-npm run start
+npm run build
+
+npx cap sync
+npx cap open android|ios
 ```
 
 ## Установка
-```bash
-npm install capacitor-appmetrica-plugin@^3.0.0
 
-npx cap sync ios
-npx cap sync android
+Capacitor 3, 4, 5:
+```bash
+npm install capacitor-appmetrica-plugin
+
+npx cap sync
 ```
 
-#### Android
+Для Capacitor 2:
+```bash
+npm install capacitor-appmetrica-plugin@^2.0.0
+
+npx cap sync
+```
+
+### Android
 
 **Настройка геолокации (опционально)**
 
@@ -53,6 +68,7 @@ const { AppMetricaPlugin } = Plugins;
 
 AppMetrica.activate({
   apiKey: "<API key приложения>",
+  logs: true
 }).then(() => {
   // Успешная активация
 }).catch(() => {
