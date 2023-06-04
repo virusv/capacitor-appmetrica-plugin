@@ -84,7 +84,7 @@ public class AppMetrica: CAPPlugin {
     @objc func reportError(_ call: CAPPluginCall) {
         let group = call.getString("group") ?? call.getString("name") ?? "Undefined"
         let message = call.getString("message") ?? call.getString("error") ?? nil
-        let parameters = call.getObject("parameters", defaultValue: [:])
+        let parameters = call.getObject("parameters", [:])
         
         let yandexError = YMMError(
             identifier: group,
