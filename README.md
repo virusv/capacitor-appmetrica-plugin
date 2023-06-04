@@ -25,23 +25,6 @@ npx cap sync android
 ```
 
 #### Android
-~~Открыть файл: `android/app/src/main/java/**/MainActivity.java`~~
-
-```java
-// ...
-// import ru.inaliv.appmetrica.AppMetrica;
-// public class MainActivity extends BridgeActivity {
-//   @Override
-//   public void onCreate(Bundle savedInstanceState) {
-//     super.onCreate(savedInstanceState);
-//     // Initializes the Bridge
-//     this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-//       add(AppMetrica.class); // Инициализировать плагин
-//       // ...
-//     }});
-//   }
-// }
-```
 
 **Настройка геолокации (опционально)**
 

@@ -1,11 +1,23 @@
-const AppMetrica = Capacitor.Plugins.AppMetrica;
+import {
+  AppMetrica,
+  ECommerceCartItem,
+  ECommerceOrder,
+  ECommercePrice,
+  ECommerceProduct,
+  ECommerceReferrer,
+  ECommerceScreen,
+  YAMConfig,
+  YAMUserProfile
+} from 'capacitor-appmetrica-plugin';
+
+type HTMLElementIonCustom = HTMLElement & Record<string, any>;
 
 const app = createDemoApp();
 
-app.initMetrika().then(function () {
+app.initMetrika().then(() => {
   app.initActions();
-  console.log("App Metrica -- INIT");
-}).catch(function(e) {
+  console.log("App Metrica -- INIT | Plugin v3.0");
+}).catch((e) => {
   // app.initActions(); // DEV
   alert(e);
 });
@@ -13,10 +25,11 @@ app.initMetrika().then(function () {
 function createDemoApp() {
   // Helpers
   const eClick = function (id, handler) {
-    return document.getElementById(id).addEventListener('click', handler);
+    return document.getElementById(id)?.addEventListener('click', handler);
   };
-  const toast = function(message, color = 'dark', duration = 2000) {
-    const toast = document.createElement('ion-toast');
+
+  const toast = function (message, color = 'dark', duration = 2000) {
+    const toast = document.createElement('ion-toast') as HTMLElementIonCustom;
     toast.message = message;
     toast.duration = duration;
     toast.color = color;
@@ -25,7 +38,7 @@ function createDemoApp() {
     return toast.present();
   };
 
-  const config = {
+  const config: YAMConfig = {
     // TODO: Заменить на свой ключ
     apiKey: 'b294b640-42a1-485e-b45f-82cf1dd34e91',
 
@@ -37,12 +50,12 @@ function createDemoApp() {
   }
 
   function initActions() {
-    const inputEventName = document.getElementById('input_report_event_name');
+    const inputEventName = document.getElementById('input_report_event_name') as HTMLElementIonCustom;
 
-    const inputErrorGroup = document.getElementById('input_error_event_group');
-    const inputErrorMessage = document.getElementById('input_error_event_message');
+    const inputErrorGroup = document.getElementById('input_error_event_group') as HTMLElementIonCustom;
+    const inputErrorMessage = document.getElementById('input_error_event_message') as HTMLElementIonCustom;
 
-    eClick('report_event', function() {
+    eClick('report_event', () => {
       const name = inputEventName.value || 'empty';
 
       // Простое событие
@@ -50,12 +63,12 @@ function createDemoApp() {
         name: name,
         params: { paramOne: 'example' }
       })
-        .then(function() { toast('Событие отправлено', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие отправлено', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    eClick('report_error', function() {
+    eClick('report_error', () => {
       const group = inputErrorGroup.value || 'empty';
       const message = inputErrorMessage.value || undefined;
 
@@ -67,17 +80,16 @@ function createDemoApp() {
           key: "value",
         }
       })
-        .then(function() { toast('Ошибка отправлена', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Ошибка отправлена', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    eClick('user_profile_report', function() {
+    eClick('user_profile_report', () => {
       // Установка идентификатора профиля пользователя
       AppMetrica.setUserProfileId({ id: 'user_id_1' }); // async
 
-      // Отправка атрибутов профиля
-      AppMetrica.reportUserProfile({
+      const userProfile: YAMUserProfile = {
         name: 'Nalivayko Ivan',
         gender: 'male',
         notificationEnabled: true,
@@ -86,14 +98,18 @@ function createDemoApp() {
           month: 1,
           day: 1
         }
-      })
-        .then(function() { toast('Данные профиля отправлены', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+      };
+
+      // Отправка атрибутов профиля
+      AppMetrica.reportUserProfile(userProfile)
+        .then(() => { toast('Данные профиля отправлены', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    const inputLocationLatitude = document.getElementById('input_location_latitude');
-    const inputLocationLongitude = document.getElementById('input_location_longitude');
+    const inputLocationLatitude = document.getElementById('input_location_latitude') as HTMLElementIonCustom;
+    const inputLocationLongitude = document.getElementById('input_location_longitude') as HTMLElementIonCustom;
+
     eClick('set_location', function () {
       const latitude  = Number.parseFloat(inputLocationLatitude.value)  || 51.661660;
       const longitude = Number.parseFloat(inputLocationLongitude.value) || 39.200050;
@@ -102,8 +118,8 @@ function createDemoApp() {
         latitude: latitude,
         longitude: longitude,
       })
-        .then(function() { toast('Координаты установлены', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Координаты установлены', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
@@ -111,17 +127,17 @@ function createDemoApp() {
 
     // -------------
 
-    eClick('view_screen', function() {
+    eClick('view_screen', () => {
       const screen = getDemoScreen('home');
 
       // eCommerce: Открытие страницы
       AppMetrica.showScreenEvent(screen)
-        .then(function() { toast('Событие отправлено', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие отправлено', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    eClick('show_product_card', function() {
+    eClick('show_product_card', () => {
       const screen = getDemoScreen('screen-101');
       const product = getDemoProduct('101');
 
@@ -130,12 +146,12 @@ function createDemoApp() {
         product: product,
         screen: screen,
       })
-        .then(function() { toast('Событие отправлено', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие отправлено', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    eClick('show_product_details', function() {
+    eClick('show_product_details', () => {
       const screen = getDemoScreen('screen-102');
       const product = getDemoProduct('102', 1000, 600, true);
       const referrer = getDemoReferrer('button-102', screen);
@@ -145,66 +161,66 @@ function createDemoApp() {
         product: product,
         referrer: referrer,
       })
-        .then(function() { toast('Событие отправлено', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие отправлено', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    eClick('add_cart_item', function() {
+    eClick('add_cart_item', () => {
       const screen = getDemoScreen('screen-103');
       const referrer = getDemoReferrer('button-103', screen);
       const cartItem = getDemoCartItem('102', 1, 800, 400, referrer);
 
       // eCommerce: Добавление товара в корзину
       AppMetrica.addCartItemEvent(cartItem)
-        .then(function() { toast('Событие отправлено [+1]', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие отправлено [+1]', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    eClick('remove_cart_item', function() {
+    eClick('remove_cart_item', () => {
       const screen = getDemoScreen('screen-104');
       const referrer = getDemoReferrer('button-104', screen);
       const cartItem = getDemoCartItem('102', 1, 800, 400, referrer);
 
       // eCommerce: Добавление товара в корзину
       AppMetrica.removeCartItemEvent(cartItem)
-        .then(function() { toast('Событие отправлено [-1]', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие отправлено [-1]', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    let gOrder = null;
+    let gOrder: ECommerceOrder|null = null;
     let gOrderIdPrefix = Date.now() + '_';
     let gOrderCounter = 0;
-    const gOrderViewData = document.getElementById('order_data');
+    const gOrderViewData = document.getElementById('order_data') as HTMLDivElement;
 
-    eClick('begin_checkout', function() {
+    eClick('begin_checkout', () => {
       gOrder = getDemoOrder(gOrderIdPrefix + String(++gOrderCounter));
       gOrderViewData.innerHTML = JSON.stringify(gOrder, null, '  ');
 
       // eCommerce: Начало оформления заказа
       AppMetrica.beginCheckoutEvent(gOrder)
-        .then(function() { toast('Событие "beginCheckoutEvent" отправлено', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие "beginCheckoutEvent" отправлено', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
 
-    eClick('purchase', function() {
+    eClick('purchase', () => {
       const purchaseOrder = gOrder || getDemoOrder(gOrderIdPrefix + String(++gOrderCounter));
       gOrderViewData.innerHTML = JSON.stringify(purchaseOrder, null, '  ');
       gOrder = null;
 
       // eCommerce: Завершение оформления заказа
       AppMetrica.purchaseEvent(purchaseOrder)
-        .then(function() { toast('Событие "purchaseEvent" отправлено', 'success'); })
-        .catch(function(e) { toast(e, 'danger'); })
+        .then(() => { toast('Событие "purchaseEvent" отправлено', 'success'); })
+        .catch(e => { toast(e, 'danger'); })
       ;
     });
   }
 
-  function getDemoPrice(fiat, isComponents = false) {
-    let price = {
+  function getDemoPrice(fiat: number, isComponents = false): ECommercePrice {
+    let price: ECommercePrice = {
       fiat: [fiat, 'RUB'],
     };
   
@@ -218,7 +234,7 @@ function createDemoApp() {
     return price;
   }
   
-  function getDemoProduct(id, actualPrice = 1000, originalPrice = 600, isComponents = false) {
+  function getDemoProduct(id: string, actualPrice = 1000, originalPrice = 600, isComponents = false): ECommerceProduct {
     return {
       sku: String(id),
       name: "Тестовый товар #" + id,
@@ -236,7 +252,7 @@ function createDemoApp() {
     };
   }
   
-  function getDemoScreen(name) {
+  function getDemoScreen(name: string): ECommerceScreen {
     return {
       name: name,
       searchQuery: name + ' - купить дешего',
@@ -245,7 +261,7 @@ function createDemoApp() {
     };
   }
   
-  function getDemoReferrer(id, screen) {
+  function getDemoReferrer(id: string, screen: ECommerceScreen): ECommerceReferrer {
     return {
       type: 'button',
       identifier: id,
@@ -254,12 +270,12 @@ function createDemoApp() {
   }
   
   function getDemoCartItem(
-    id,
+    id: string,
     quantity = 1,
     actualPrice = 1000,
     originalPrice = 600,
-    referrer = undefined,
-  ) {
+    referrer?: ECommerceReferrer,
+  ): ECommerceCartItem {
     return {
       product: getDemoProduct(id, actualPrice, originalPrice),
       revenue: getDemoPrice(actualPrice - originalPrice),
@@ -268,8 +284,8 @@ function createDemoApp() {
     };
   }
   
-  function getDemoOrder(id, itemsCount = 10) {
-    let cartItems = [];
+  function getDemoOrder(id: string, itemsCount = 10): ECommerceOrder {
+    let cartItems: ECommerceCartItem[] = [];
   
     let screen = getDemoScreen('Придуманная страница товара 1');
     let referrer = getDemoReferrer('order-screen', screen);
@@ -277,7 +293,7 @@ function createDemoApp() {
     for (let i = 0; i < itemsCount; ++i) {
       cartItems.push(
         getDemoCartItem(
-          (i + 1) * 10,
+          String((i + 1) * 10),
           Math.round(Math.random()),
           1000 + 10 * i,
           Math.round((1000 + 10 * i) * 0.6),
