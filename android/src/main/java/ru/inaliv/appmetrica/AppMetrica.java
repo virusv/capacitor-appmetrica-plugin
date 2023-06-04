@@ -3,6 +3,7 @@ package ru.inaliv.appmetrica;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.app.Activity;
 
 import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.YandexMetricaConfig;
