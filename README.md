@@ -1,42 +1,45 @@
-# Плагин App Metrica для Capacitor
+# Плагин Yandex App Metrica для Capacitor
 
-- На данный момент поддерживается только версия Capacitor 2.
+- Поддержка Capacitor 2, 3 - 5.
 - Работает на платформах: iOS, Android.
 - Поддерживает E-Commerce события
+- Поддерживает отправку атрибутов профиля
 - Deeplinks (не тестровались)
 - Locations (не тестровались)
 
+**Версии App Metrica SDK:**
+- iOS: **4.5.0**
+- Android: **5.2.0**
 
 ## Демо приложение
 
-[Ссылка на репозиторий](https://github.com/virusv/capacitor-appmetrica-demoapp)
+```bash
+cd example
+
+npm install
+npm run build
+
+npx cap sync
+npx cap open android|ios
+```
 
 ## Установка
+
+Capacitor 3, 4, 5:
 ```bash
 npm install capacitor-appmetrica-plugin
 
-npx cap sync ios
-npx cap sync android
+npx cap sync
 ```
 
-#### Android
-Открыть файл: `android/app/src/main/java/**/MainActivity.java`
+Для Capacitor 2:
+```bash
+npm install capacitor-appmetrica-plugin@^2.0.0
 
-```java
-// ...
-import ru.inaliv.appmetrica.AppMetrica;
-public class MainActivity extends BridgeActivity {
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    // Initializes the Bridge
-    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-      add(AppMetrica.class); // Инициализировать плагин
-      // ...
-    }});
-  }
-}
+npx cap sync
 ```
+
+### Android
 
 **Настройка геолокации (опционально)**
 
@@ -59,12 +62,11 @@ public class MainActivity extends BridgeActivity {
 ### Конфигурация/Активация
 
 ```ts
-import { Plugins } from '@capacitor/core';
-
-const { AppMetricaPlugin } = Plugins;
+import { AppMetrica } from 'capacitor-appmetrica-plugin';
 
 AppMetrica.activate({
   apiKey: "<API key приложения>",
+  logs: true
 }).then(() => {
   // Успешная активация
 }).catch(() => {
@@ -88,9 +90,37 @@ AppMetrica.reportEvent({
 Событие ошибки:
 ```ts
 AppMetrica.reportError({
-  name: "Имя ошибки",
-  error: "Описание ошибки"
-})
+  group: "идентификатор_группы",
+  message: "Сообщение ошибки",
+  parameters: { // В Android данные передаются в виде JSON строки внутри Throwable объекта
+    key: "value",
+  }
+});
+```
+
+**WARNING:** Ранее данные события ошибки передавались через поля `name` и `error` - данные значения объявлены как deprecated, будут удалены в следующей версии.
+
+### Отправка атрибутов профиля
+
+Задать идентификатор профиля:
+```ts
+AppMetrica.setUserProfileId({ id: 'user_id_1' })
+```
+
+Отправка атрибутов:
+```ts
+const userProfile: YAMUserProfile = {
+  name: 'Nalivayko Ivan',
+  gender: 'male',
+  notificationEnabled: true,
+  birthDate: { // or { age: 20 }
+    year: 2001,
+    month: 1,
+    day: 1
+  }
+};
+
+AppMetrica.reportUserProfile(userProfile);
 ```
 
 ### E-Commerce события

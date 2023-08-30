@@ -60,9 +60,9 @@ public class AppMetrica: CAPPlugin {
             let config = try Converter.toConfig(config: call.options)
             YMMYandexMetrica.activate(with: config)
             
-            call.success()
+            call.resolve()
         } catch {
-            call.error("Не удалось инициализировать метрику")
+            call.reject("Не удалось инициализировать метрику")
         }
     }
     
@@ -70,33 +70,33 @@ public class AppMetrica: CAPPlugin {
      * Отправляет событие в App метрику
      */
     @objc func reportEvent(_ call: CAPPluginCall) {
-        let evName = call.getString("name") ?? "Undefined";
-        let evParams = call.getObject("params");
+        let evName = call.getString("name") ?? "Undefined"
+        let evParams = call.getObject("params")
 
-        YMMYandexMetrica.reportEvent(evName, parameters: evParams);
+        YMMYandexMetrica.reportEvent(evName, parameters: evParams)
         
-        call.success();
+        call.resolve()
     }
 
     /**
      * Отправляет ошибку в App метрику
      */
     @objc func reportError(_ call: CAPPluginCall) {
-        let errorName = call.getString("name") ?? "Undefined";
-        let errorMessage = call.getString("error");
+        let group = call.getString("group") ?? call.getString("name") ?? "Undefined"
+        let message = call.getString("message") ?? call.getString("error") ?? nil
+        let parameters = call.getObject("parameters", [:])
         
-        let underlyingError = YMMError.init(identifier: "Underlying YMMError")
-        let error = YMMError(
-            identifier: errorName,
-            message: errorMessage,
-            parameters: nil, // Android not supported
+        let yandexError = YMMError(
+            identifier: group,
+            message: message,
+            parameters: parameters,
             backtrace: Thread.callStackReturnAddresses,
-            underlyingError: underlyingError
+            underlyingError: nil
         )
         
-        YMMYandexMetrica.report(error: error, onFailure: nil)
+        YMMYandexMetrica.report(error: yandexError, onFailure: nil)
 
-        call.success();
+        call.resolve()
     }
     
     /*
@@ -107,7 +107,7 @@ public class AppMetrica: CAPPlugin {
         
         YMMYandexMetrica.setLocation(location)
         
-        call.success()
+        call.resolve()
     }
     
     /*
@@ -118,7 +118,7 @@ public class AppMetrica: CAPPlugin {
         
         YMMYandexMetrica.setLocationTracking(enabled)
         
-        call.success()
+        call.resolve()
     }
     
     /**
@@ -128,7 +128,7 @@ public class AppMetrica: CAPPlugin {
         let screen = Converter.toECommerceScreen(screen: call.options)
         YMMYandexMetrica.report(eCommerce: .showScreenEvent(screen: screen), onFailure: nil)
 
-        call.success();
+        call.resolve()
     }
     
     /**
@@ -141,13 +141,13 @@ public class AppMetrica: CAPPlugin {
             
             YMMYandexMetrica.report(eCommerce: .showProductCardEvent(product: product, screen: screen), onFailure: nil)
             
-            call.success();
+            call.resolve()
         }
         catch let e as Converter.ValidationError {
-            call.error(e.errorDescription ?? "Undefined error")
+            call.reject(e.errorDescription ?? "Undefined error")
         }
         catch {
-            call.error("Undefined error")
+            call.reject("Undefined error")
         }
     }
     
@@ -161,13 +161,13 @@ public class AppMetrica: CAPPlugin {
             
             YMMYandexMetrica.report(eCommerce: .showProductDetailsEvent(product: product, referrer: referrer), onFailure: nil)
             
-            call.success();
+            call.resolve()
         }
         catch let e as Converter.ValidationError {
-            call.error(e.errorDescription ?? "Undefined error")
+            call.reject(e.errorDescription ?? "Undefined error")
         }
         catch {
-            call.error("Undefined error")
+            call.reject("Undefined error")
         }
     }
     
@@ -180,13 +180,13 @@ public class AppMetrica: CAPPlugin {
             let cartItem = try Converter.toECommerceCartItem(item: call.options)
             YMMYandexMetrica.report(eCommerce: .addCartItemEvent(cartItem: cartItem), onFailure: nil)
             
-            call.success();
+            call.resolve()
         }
         catch let e as Converter.ValidationError {
-            call.error(e.errorDescription ?? "Undefined error")
+            call.reject(e.errorDescription ?? "Undefined error")
         }
         catch {
-            call.error("Undefined error")
+            call.reject("Undefined error")
         }
     }
     
@@ -198,13 +198,13 @@ public class AppMetrica: CAPPlugin {
             let cartItem = try Converter.toECommerceCartItem(item: call.options)
             YMMYandexMetrica.report(eCommerce: .removeCartItemEvent(cartItem: cartItem), onFailure: nil)
             
-            call.success();
+            call.resolve()
         }
         catch let e as Converter.ValidationError {
-            call.error(e.errorDescription ?? "Undefined error")
+            call.reject(e.errorDescription ?? "Undefined error")
         }
         catch {
-            call.error("Undefined error")
+            call.reject("Undefined error")
         }
     }
     
@@ -217,13 +217,13 @@ public class AppMetrica: CAPPlugin {
             
             YMMYandexMetrica.report(eCommerce: .beginCheckoutEvent(order: order), onFailure: nil)
             
-            call.success();
+            call.resolve()
         }
         catch let e as Converter.ValidationError {
-            call.error(e.errorDescription ?? "Undefined error")
+            call.reject(e.errorDescription ?? "Undefined error")
         }
         catch {
-            call.error("Undefined error")
+            call.reject("Undefined error")
         }
     }
     
@@ -236,13 +236,39 @@ public class AppMetrica: CAPPlugin {
             
             YMMYandexMetrica.report(eCommerce: .purchaseEvent(order: order), onFailure: nil)
             
-            call.success();
+            call.resolve()
         }
         catch let e as Converter.ValidationError {
-            call.error(e.errorDescription ?? "Undefined error")
+            call.reject(e.errorDescription ?? "Undefined error")
         }
         catch {
-            call.error("Undefined error")
+            call.reject("Undefined error")
+        }
+    }
+    
+    /**
+     * User Profile:  Отправка идентификатора  профиля
+     */
+    @objc func setUserProfileId(_ call: CAPPluginCall) {
+        if let userId = call.options["id"] as? String {
+            YMMYandexMetrica.setUserProfileID(userId)
+            call.resolve()
+        } else {
+            call.reject("Не передан обязательный идентификатор профиля")
+        }
+    }
+    
+    /**
+     * User Profile:  Отправка атрибутов профиля
+     */
+    @objc func reportUserProfile(_ call: CAPPluginCall) {
+        do {
+            let profile = try Converter.toUserProfile(user: call.options)
+            YMMYandexMetrica.report(profile)
+            
+            call.resolve()
+        } catch {
+            call.reject("Undefined Error")
         }
     }
 }

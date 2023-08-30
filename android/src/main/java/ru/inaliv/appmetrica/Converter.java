@@ -3,7 +3,6 @@ package ru.inaliv.appmetrica;
 import android.location.Location;
 import android.os.Build;
 
-import com.getcapacitor.JSObject;
 import com.yandex.metrica.YandexMetricaConfig;
 import com.yandex.metrica.ecommerce.ECommerceAmount;
 import com.yandex.metrica.ecommerce.ECommerceCartItem;
@@ -12,9 +11,14 @@ import com.yandex.metrica.ecommerce.ECommercePrice;
 import com.yandex.metrica.ecommerce.ECommerceProduct;
 import com.yandex.metrica.ecommerce.ECommerceReferrer;
 import com.yandex.metrica.ecommerce.ECommerceScreen;
+import com.yandex.metrica.profile.Attribute;
+import com.yandex.metrica.profile.GenderAttribute;
+import com.yandex.metrica.profile.UserProfile;
+import com.yandex.metrica.profile.UserProfileUpdate;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,26 +29,29 @@ import java.util.Map;
 
 public class Converter {
     /**
-     * Сконвертирует конфигурацию JSObject в объект для App Метрики
+     * Сконвертирует конфигурацию JSONObject в объект для App Метрики
      *
      * @param config
      * @return
      */
-    public static YandexMetricaConfig toConfig(final JSObject config) throws JSONException {
+    public static YandexMetricaConfig toConfig(final JSONObject config) throws JSONException {
         final String apiKey = config.getString("apiKey");
         final YandexMetricaConfig.Builder builder = YandexMetricaConfig.newConfigBuilder(apiKey);
 
         if (config.has("handleFirstActivationAsUpdate")) {
-            builder.handleFirstActivationAsUpdate(config.getBool("handleFirstActivationAsUpdate"));
+            builder.handleFirstActivationAsUpdate(config.getBoolean("handleFirstActivationAsUpdate"));
         }
         if (config.has("locationTracking")) {
-            builder.withLocationTracking(config.getBool("locationTracking"));
+            builder.withLocationTracking(config.getBoolean("locationTracking"));
         }
         if (config.has("sessionTimeout")) {
-            builder.withSessionTimeout(config.getInteger("sessionTimeout"));
+            builder.withSessionTimeout(config.getInt("sessionTimeout"));
         }
         if (config.has("crashReporting")) {
-            builder.withCrashReporting(config.getBool("crashReporting"));
+            builder.withCrashReporting(config.getBoolean("crashReporting"));
+        }
+        if (config.has("nativeCrashReporting")) {
+            builder.withNativeCrashReporting(config.getBoolean("nativeCrashReporting"));
         }
         if (config.has("appVersion")) {
             builder.withAppVersion(config.getString("appVersion"));
@@ -53,7 +60,7 @@ public class Converter {
             builder.withLogs();
         }
         if (config.has("location")) {
-            final Location location = Converter.toLocation(config.getJSObject("location"));
+            final Location location = Converter.toLocation(config.getJSONObject("location"));
             builder.withLocation(location);
         }
 
@@ -61,13 +68,13 @@ public class Converter {
     }
 
     /**
-     * Конвертирует конфигурацию JSObject в объект Location для App Метрики
+     * Конвертирует конфигурацию JSONObject в объект Location для App Метрики
      *
      * @param location
      * @return
      * @throws JSONException
      */
-    public static Location toLocation(final JSObject location) throws JSONException {
+    public static Location toLocation(final JSONObject location) throws JSONException {
         final Location yamLocation = new Location("Custom");
 
         if (location.has("latitude")) {
@@ -126,7 +133,7 @@ public class Converter {
      * @return
      * @throws JSONException
      */
-    public static ECommerceProduct toECommerceProduct(final JSObject product) throws JSONException {
+    public static ECommerceProduct toECommerceProduct(final JSONObject product) throws JSONException {
         ECommerceProduct yamProduct = new ECommerceProduct(product.getString("sku"));
 
         if (product.has("name")) {
@@ -136,7 +143,7 @@ public class Converter {
         if (product.has("actualPrice")) {
             yamProduct.setActualPrice(
                 toECommercePrice(
-                    product.getJSObject("actualPrice")
+                    product.getJSONObject("actualPrice")
                 )
             );
         }
@@ -144,7 +151,7 @@ public class Converter {
         if (product.has("originalPrice")) {
             yamProduct.setOriginalPrice(
                 toECommercePrice(
-                    product.getJSObject("originalPrice")
+                    product.getJSONObject("originalPrice")
                 )
             );
         }
@@ -168,7 +175,7 @@ public class Converter {
         if (product.has("payload")) {
             yamProduct.setPayload(
                 toHashMapPayload(
-                    product.getJSObject("payload")
+                    product.getJSONObject("payload")
                 )
             );
         }
@@ -194,7 +201,7 @@ public class Converter {
      * @return
      * @throws JSONException
      */
-    public static ECommerceScreen toECommerceScreen(final JSObject screen) throws JSONException {
+    public static ECommerceScreen toECommerceScreen(final JSONObject screen) throws JSONException {
         ECommerceScreen yamScreen = new ECommerceScreen();
 
         if (screen.has("name")) {
@@ -210,7 +217,7 @@ public class Converter {
         }
 
         if (screen.has("payload")) {
-            yamScreen.setPayload(toHashMapPayload(screen.getJSObject("payload")));
+            yamScreen.setPayload(toHashMapPayload(screen.getJSONObject("payload")));
         }
 
         return yamScreen;
@@ -229,9 +236,9 @@ public class Converter {
      * @return
      * @throws JSONException
      */
-    public static ECommerceCartItem toECommerceCartItem(final JSObject item) throws JSONException {
-        ECommerceProduct yamProduct = toECommerceProduct(item.getJSObject("product"));
-        ECommercePrice yamRevenue = toECommercePrice(item.getJSObject("revenue"));
+    public static ECommerceCartItem toECommerceCartItem(final JSONObject item) throws JSONException {
+        ECommerceProduct yamProduct = toECommerceProduct(item.getJSONObject("product"));
+        ECommercePrice yamRevenue = toECommercePrice(item.getJSONObject("revenue"));
         double quantity = (double)item.getDouble("quantity");
 
         ECommerceCartItem yamCartItem = new ECommerceCartItem(yamProduct, yamRevenue, quantity);
@@ -239,7 +246,7 @@ public class Converter {
         if (item.has("referrer")) {
             yamCartItem.setReferrer(
                 toECommerceReferrer(
-                    item.getJSObject("referrer")
+                    item.getJSONObject("referrer")
                 )
             );
         }
@@ -265,14 +272,14 @@ public class Converter {
      * @return
      * @throws JSONException
      */
-    public static ECommerceOrder toECommerceOrder(final JSObject order) throws JSONException {
+    public static ECommerceOrder toECommerceOrder(final JSONObject order) throws JSONException {
         String identifier = order.getString("identifier");
         List<ECommerceCartItem> yamCartItems = new ArrayList<>();
 
         JSONArray items = order.getJSONArray("cartItems");
         for (int i = 0; i < items.length(); ++i) {
             ECommerceCartItem yamItem = toECommerceCartItem(
-                    JSObject.fromJSONObject(items.getJSONObject(i))
+                    items.getJSONObject(i)
             );
 
             yamCartItems.add(yamItem);
@@ -283,7 +290,7 @@ public class Converter {
         if (order.has("payload")) {
             yamOrder.setPayload(
                 toHashMapPayload(
-                    order.getJSObject("payload")
+                    order.getJSONObject("payload")
                 )
             );
         }
@@ -303,7 +310,7 @@ public class Converter {
      * @return
      * @throws JSONException
      */
-    public static ECommerceReferrer toECommerceReferrer(final JSObject referrer) throws JSONException {
+    public static ECommerceReferrer toECommerceReferrer(final JSONObject referrer) throws JSONException {
         ECommerceReferrer yamReferrer = new ECommerceReferrer();
 
         if (referrer.has("type")) {
@@ -317,7 +324,7 @@ public class Converter {
         if (referrer.has("screen")) {
             yamReferrer.setScreen(
                 toECommerceScreen(
-                    referrer.getJSObject("screen")
+                    referrer.getJSONObject("screen")
                 )
             );
         }
@@ -340,7 +347,7 @@ public class Converter {
      * @return
      * @throws JSONException
      */
-    public static ECommercePrice toECommercePrice(final JSObject price) throws JSONException {
+    public static ECommercePrice toECommercePrice(final JSONObject price) throws JSONException {
         ECommercePrice yamPrice = new ECommercePrice(
             toECommerceAmount(
                 price.getJSONArray("fiat")
@@ -385,7 +392,7 @@ public class Converter {
      * @param payload
      * @return
      */
-    public static Map<String, String> toHashMapPayload(final JSObject payload) {
+    public static Map<String, String> toHashMapPayload(final JSONObject payload) throws JSONException {
         Map<String, String> yamPayload = new HashMap<>();
         Iterator<String> payloadIter = payload.keys();
 
@@ -413,5 +420,89 @@ public class Converter {
         }
 
         return list;
+    }
+
+    /**
+     * From:
+     * {
+     *   "name": "Ivan Nalivayko",
+     *   "gender": "male",
+     *   "notificationEnabled": false,
+     *   "birthDate": { // OR: { "age": 20 }
+     *     "year": 2001,
+     *     "month": 1,
+     *      "day": 1
+     *   }
+     * }
+     *
+     * @param user
+     * @return
+     * @throws JSONException
+     */
+    public static UserProfile toUserProfile(final JSONObject user) throws JSONException {
+        UserProfile.Builder yamProfileBuilder = UserProfile.newBuilder();
+
+        if (user.has("name")) {
+            yamProfileBuilder.apply(Attribute.name().withValue(
+                user.getString("name")
+            ));
+        }
+
+        if (user.has("gender")) {
+            yamProfileBuilder.apply(Attribute.gender().withValue(
+                toGenderType(user.getString("gender"))
+            ));
+        }
+
+        if (user.has("notificationEnabled")) {
+            yamProfileBuilder.apply(Attribute.notificationsEnabled().withValue(
+                user.getBoolean("notificationEnabled")
+            ));
+        }
+
+        if (user.has("birthDate")) {
+            JSONObject birthDate = user.getJSONObject("birthDate");
+            UserProfileUpdate yamBirthDate = null;
+
+            if (birthDate.has("year")) {
+                int year = birthDate.getInt("year");
+
+                if (birthDate.has("month")) {
+                    int month = birthDate.getInt("month");
+
+                    if (birthDate.has("day")) {
+                        int day = birthDate.getInt("day");
+
+                        yamBirthDate = Attribute.birthDate().withBirthDate(year, month, day);
+                    } else {
+                        yamBirthDate = Attribute.birthDate().withBirthDate(year, month);
+                    }
+                } else {
+                    yamBirthDate = Attribute.birthDate().withBirthDate(year);
+                }
+            } else if (birthDate.has("age")) {
+                int age = birthDate.getInt("age");
+
+                yamBirthDate = Attribute.birthDate().withAge(age);
+            }
+
+            if (yamBirthDate != null) {
+                yamProfileBuilder.apply(yamBirthDate);
+            }
+        }
+
+        return yamProfileBuilder.build();
+    }
+
+    private static GenderAttribute.Gender toGenderType(final String gender) {
+        if (gender == "female") {
+            return GenderAttribute.Gender.FEMALE;
+        }
+
+        if (gender == "male") {
+            return GenderAttribute.Gender.MALE;
+        }
+
+        return GenderAttribute.Gender.OTHER;
     }
 }

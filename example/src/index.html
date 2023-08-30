@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>App Metrica - demo app</title>
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <ion-app>
+      <div class="ion-page">
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>
+              App Metrica / demo
+              {<ion-icon color="primary" name="stats-chart-outline"></ion-icon>}
+            </ion-title>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content>
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Простое событие</ion-card-title>
+            </ion-card-header>
+
+            <ion-list>
+              <ion-item>
+                <ion-label>Параметры</ion-label>
+                <ion-chip slot="end" color="primary">{paramOne: 'example'}</ion-chip>
+              </ion-item>
+            </ion-list>
+      
+            <ion-card-content>
+              <ion-item class="ion-margin-bottom">
+                <ion-label position="floating">Имя события</ion-label>
+                <ion-input id="input_report_event_name" value="demo_event_1"></ion-input>
+              </ion-item>
+
+              <ion-button id="report_event" expand="block">Отправить</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Событие ошибки</ion-card-title>
+            </ion-card-header>
+      
+            <ion-card-content>
+              <ion-item class="ion-margin-bottom">
+                <ion-label position="floating">Группа</ion-label>
+                <ion-input id="input_error_event_group" value="demo_error_group_1"></ion-input>
+              </ion-item>
+
+              <ion-item class="ion-margin-bottom">
+                <ion-label position="floating">Сообщение ошибки</ion-label>
+                <ion-input id="input_error_event_message" value="Сообщение ошибки 1"></ion-input>
+              </ion-item>
+
+              <ion-button id="report_error" expand="block">Отправить</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Отправка атрибутов профиля</ion-card-title>
+            </ion-card-header>
+      
+            <ion-card-content>
+              <ion-button id="user_profile_report" expand="block">Отправить</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Установить позицию</ion-card-title>
+            </ion-card-header>
+      
+            <ion-card-content>
+              <ion-item class="ion-margin-bottom">
+                <ion-label>Широта</ion-label>
+                <ion-input id="input_location_latitude" value="51.661660"></ion-input>
+              </ion-item>
+
+              <ion-item class="ion-margin-bottom">
+                <ion-label>Долгота</ion-label>
+                <ion-input id="input_location_longitude" value="39.200050"></ion-input>
+              </ion-item>
+
+              <ion-button id="set_location" expand="block">Отправить</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Открытие страницы</ion-card-title>
+            </ion-card-header>
+
+            <ion-list>
+              <ion-item>
+                Экран
+                <ion-chip slot="end" color="primary">home</ion-chip>
+              </ion-item>
+            </ion-list>
+      
+            <ion-card-content>
+              <ion-button id="view_screen" expand="block">Открыть</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Просмотр карточки товара</ion-card-title>
+            </ion-card-header>
+
+            <ion-list>
+              <ion-item>
+                Экран
+                <ion-chip slot="end" color="primary">screen-101</ion-chip>
+              </ion-item>
+
+              <ion-item>
+                ID товара
+                <ion-chip slot="end" color="primary">101</ion-chip>
+              </ion-item>
+            </ion-list>
+      
+            <ion-card-content>
+              <ion-button id="show_product_card" expand="block">Посмотреть</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Просмотр страницы товара</ion-card-title>
+            </ion-card-header>
+
+            <ion-list>
+              <ion-item>
+                Экран
+                <ion-chip slot="end" color="primary">screen-102</ion-chip>
+              </ion-item>
+
+              <ion-item>
+                ID товара
+                <ion-chip slot="end" color="primary">102</ion-chip>
+              </ion-item>
+
+              <ion-item>
+                Referrer
+                <ion-chip slot="end" color="primary">button-102</ion-chip>
+              </ion-item>
+            </ion-list>
+      
+            <ion-card-content>
+              <ion-button id="show_product_details" expand="block">Детали</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Добавление/удаление <br> товара из корзины</ion-card-title>
+            </ion-card-header>
+
+            <ion-list>
+              <ion-item>
+                ID товара
+                <ion-chip slot="end" color="primary">102</ion-chip>
+              </ion-item>
+
+              <ion-item>
+                Экран добавления
+                <ion-chip slot="end" color="primary">screen-103</ion-chip>
+              </ion-item>
+
+              <ion-item>
+                Экран удаления
+                <ion-chip slot="end" color="primary">screen-104</ion-chip>
+              </ion-item>
+
+              <ion-item>
+                Referrer добавления
+                <ion-chip slot="end" color="primary">button-103</ion-chip>
+              </ion-item>
+
+              <ion-item>
+                Referrer удаления
+                <ion-chip slot="end" color="primary">button-104</ion-chip>
+              </ion-item>
+            </ion-list>
+      
+            <ion-card-content>
+              <ion-button id="add_cart_item" expand="block">Добавить (+1)</ion-button>
+              <ion-button id="remove_cart_item" expand="block">Удалить (-1)</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Начало/завершение оформления заказа</ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-button id="begin_checkout" expand="block">Начало оформления</ion-button>
+              <ion-button id="purchase" expand="block">Завершить</ion-button>
+            </ion-card-content>
+
+            <ion-accordion-group>
+              <ion-accordion value="order_details">
+                <ion-item slot="header">
+                  <ion-label>Подробная информация о заказе</ion-label>
+                </ion-item>
+                <div class="ion-padding" slot="content">
+                  <pre style="font-size: 8px;" id="order_data">Здесь пока ничего нет</pre>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+          </ion-card>
+        </ion-content>
+      </div>
+    </ion-app>
+  </div>
+
+  <script src="./scripts/main.ts" type="module"></script>
+</body>
+</html>

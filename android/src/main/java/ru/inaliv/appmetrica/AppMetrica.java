@@ -3,27 +3,29 @@ package ru.inaliv.appmetrica;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.app.Activity;
 
 import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.YandexMetricaConfig;
 
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
 import com.yandex.metrica.ecommerce.ECommerceCartItem;
 import com.yandex.metrica.ecommerce.ECommerceEvent;
 import com.yandex.metrica.ecommerce.ECommerceOrder;
 import com.yandex.metrica.ecommerce.ECommerceProduct;
 import com.yandex.metrica.ecommerce.ECommerceReferrer;
 import com.yandex.metrica.ecommerce.ECommerceScreen;
+import com.yandex.metrica.profile.UserProfile;
 
 import org.json.JSONException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@NativePlugin
+@CapacitorPlugin(name = "AppMetrica")
 public class AppMetrica extends Plugin {
     private final Object mLock = new Object();
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
@@ -37,30 +39,29 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void activate(PluginCall call) {
+    public void activate(final PluginCall call) {
         final YandexMetricaConfig config;
         try {
             config = Converter.toConfig(call.getData());
         } catch (JSONException e) {
-            call.error("Failed to activate metric: " + e.getMessage());
+            call.reject("Failed to activate metric: " + e.getMessage());
             return;
         }
-        final Context context = getBridge().getActivity().getApplicationContext();
 
-        YandexMetrica.activate(context, config);
+        YandexMetrica.activate(getContext(), config);
 
         synchronized (mLock) {
             if (mAppMetricaActivated == false) {
-                YandexMetrica.reportAppOpen(bridge.getActivity());
+                YandexMetrica.reportAppOpen(getActivity());
 
                 if (mActivityPaused == false) {
-                    YandexMetrica.resumeSession(bridge.getActivity());
+                    YandexMetrica.resumeSession(getActivity());
                 }
             }
 
             mAppMetricaActivated = true;
 
-            call.success();
+            call.resolve();
         }
     }
 
@@ -70,7 +71,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void reportEvent(PluginCall call) {
+    public void reportEvent(final PluginCall call) {
         final String evName = call.getString("name");
 
         if (call.hasOption("params")) {
@@ -81,7 +82,7 @@ public class AppMetrica extends Plugin {
             YandexMetrica.reportEvent(evName);
         }
 
-        call.success();
+        call.resolve();
     }
 
     /**
@@ -89,20 +90,31 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void reportError(PluginCall call) {
-        final String errorName = call.getString("name");
+    public void reportError(final PluginCall call) {
+        final String group = call.hasOption("group")
+                ? call.getString("group")
+                : call.getString("name"); // Legacy
+
+        final String message = call.hasOption("message")
+                ? call.getString("message")
+                : call.getString("error"); // Legacy
 
         Throwable errorThrowable = null;
 
-        if (call.hasOption("error")) {
+        if (call.hasOption("parameters")) {
             errorThrowable = new Throwable(
-                call.getString("error")
+                call.getObject("parameters").toString()
             );
         }
 
-        YandexMetrica.reportError(errorName, errorThrowable);
+        if (call.hasOption("group")) {
+            final String groupIdentifier = call.getString("group");
+            YandexMetrica.reportError(groupIdentifier, message, errorThrowable);
+        } else {
+            YandexMetrica.reportError(message, errorThrowable);
+        }
 
-        call.success();
+        call.resolve();
     }
 
     /**
@@ -111,15 +123,16 @@ public class AppMetrica extends Plugin {
      * @throws JSONException
      */
     @PluginMethod
-    public void setLocation(PluginCall call) {
+    public void setLocation(final PluginCall call) {
         final JSObject locationObj = call.getData();
 
         try {
             final Location location = Converter.toLocation(locationObj);
             YandexMetrica.setLocation(location);
-            call.success();
+
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -128,10 +141,11 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void setLocationTracking(PluginCall call) {
+    public void setLocationTracking(final PluginCall call) {
         final boolean enabled = call.getBoolean("enabled", true);
         YandexMetrica.setLocationTracking(enabled);
-        call.success();
+
+        call.resolve();
     }
 
     //-------------------- ECOMMERCE ------------------------------------------
@@ -142,16 +156,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void showScreenEvent(PluginCall call) {
+    public void showScreenEvent(final PluginCall call) {
         try {
             ECommerceScreen screen = Converter.toECommerceScreen(call.getData());
 
             ECommerceEvent showScreenEvent = ECommerceEvent.showScreenEvent(screen);
             YandexMetrica.reportECommerce(showScreenEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -161,7 +175,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void showProductCardEvent(PluginCall call) {
+    public void showProductCardEvent(final PluginCall call) {
         try {
             ECommerceProduct product = Converter.toECommerceProduct(call.getObject("product"));
             ECommerceScreen screen = Converter.toECommerceScreen(call.getObject("screen"));
@@ -169,9 +183,9 @@ public class AppMetrica extends Plugin {
             ECommerceEvent showProductCardEvent = ECommerceEvent.showProductCardEvent(product, screen);
             YandexMetrica.reportECommerce(showProductCardEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -181,7 +195,7 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void showProductDetailsEvent(PluginCall call) {
+    public void showProductDetailsEvent(final PluginCall call) {
         try {
             ECommerceProduct product = Converter.toECommerceProduct(call.getObject("product"));
             ECommerceReferrer referrer = Converter.toECommerceReferrer(call.getObject("referrer"));
@@ -189,9 +203,9 @@ public class AppMetrica extends Plugin {
             ECommerceEvent showProductDetailsEvent = ECommerceEvent.showProductDetailsEvent(product, referrer);
             YandexMetrica.reportECommerce(showProductDetailsEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -201,16 +215,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void addCartItemEvent(PluginCall call) {
+    public void addCartItemEvent(final PluginCall call) {
         try {
             ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
 
             ECommerceEvent addCartItemEvent = ECommerceEvent.addCartItemEvent(cartItem);
             YandexMetrica.reportECommerce(addCartItemEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -220,16 +234,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void removeCartItemEvent(PluginCall call) {
+    public void removeCartItemEvent(final PluginCall call) {
         try {
             ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
 
             ECommerceEvent removeCartItemEvent = ECommerceEvent.removeCartItemEvent(cartItem);
             YandexMetrica.reportECommerce(removeCartItemEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -239,16 +253,16 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void beginCheckoutEvent(PluginCall call) {
+    public void beginCheckoutEvent(final PluginCall call) {
         try {
             ECommerceOrder order = Converter.toECommerceOrder(call.getData());
 
             ECommerceEvent beginCheckoutEvent = ECommerceEvent.beginCheckoutEvent(order);
             YandexMetrica.reportECommerce(beginCheckoutEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
         }
     }
 
@@ -258,16 +272,51 @@ public class AppMetrica extends Plugin {
      * @param call
      */
     @PluginMethod
-    public void purchaseEvent(PluginCall call) {
+    public void purchaseEvent(final PluginCall call) {
         try {
             ECommerceOrder order = Converter.toECommerceOrder(call.getData());
 
             ECommerceEvent purchaseEvent = ECommerceEvent.purchaseEvent(order);
             YandexMetrica.reportECommerce(purchaseEvent);
 
-            call.success();
+            call.resolve();
         } catch (JSONException e) {
-            call.error(e.getMessage());
+            call.reject(e.getMessage());
+        }
+    }
+
+    //-------------------- USER PROFILE ---------------------------------------
+
+    /**
+     * User Profile: Отправка идентификатора профиля
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void setUserProfileId(final PluginCall call) {
+        if (call.hasOption("id")) {
+            YandexMetrica.setUserProfileID(call.getString("id"));
+
+            call.resolve();
+        } else {
+            call.reject("Не передан обязательный идентификатор профиля");
+        }
+    }
+
+    /**
+     * User Profile: Отправка атрибутов профиля
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void reportUserProfile(final PluginCall call) {
+        try {
+            UserProfile userProfile = Converter.toUserProfile(call.getData());
+            YandexMetrica.reportUserProfile(userProfile);
+
+            call.resolve();
+        } catch (JSONException e) {
+            call.reject(e.getMessage());
         }
     }
 
@@ -279,7 +328,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = false;
             if (mAppMetricaActivated) {
-                YandexMetrica.resumeSession(getBridge().getActivity());
+                YandexMetrica.resumeSession(getActivity());
             }
         }
     }
@@ -291,7 +340,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = true;
             if (mAppMetricaActivated) {
-                YandexMetrica.pauseSession(getBridge().getActivity());
+                YandexMetrica.pauseSession(getActivity());
             }
         }
     }
@@ -305,7 +354,7 @@ public class AppMetrica extends Plugin {
             @Override
             public void run() {
                 if (mAppMetricaActivated) {
-                    YandexMetrica.reportAppOpen(getBridge().getActivity());
+                    YandexMetrica.reportAppOpen(getActivity());
                 }
             }
         });

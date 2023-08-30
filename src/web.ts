@@ -1,54 +1,80 @@
 import { WebPlugin } from '@capacitor/core';
-import { AppMetricaPlugin } from './definitions';
+import {
+  AppMetricaPlugin,
+  YAMConfig,
+  YAMReportEventOptions,
+  YAMReportErrorOptions,
+  YAMLocation,
+  ECommerceScreen,
+  YAMShowProductCardEventOptions,
+  YAMShowProductDetailsEventOptions,
+  ECommerceCartItem,
+  ECommerceOrder,
+  YAMUserProfileId,
+  YAMUserProfile
+} from './definitions';
 
 export class AppMetricaWeb extends WebPlugin implements AppMetricaPlugin {
+  private isMetricaLogs: boolean = false;
+
   constructor() {
     super({
       name: 'AppMetrica',
       platforms: ['web'],
     });
   }
-  activate(/*config: YAMConfig*/): Promise<void> {
-    return Promise.reject('Web not supported. [activate()]');
+
+  private log(...vars: any[]) {
+    if (this.isMetricaLogs) {
+      console.log(...vars);
+    }
   }
-  reportEvent(/*options: YAMReportEventOptions*/): Promise<void> {
-    return Promise.reject('Web not supported. [reportEvent()]');
+
+  async activate(config: YAMConfig): Promise<void> {
+    this.isMetricaLogs = config.logs === undefined ? false : config.logs;
+    this.log('AppMetrica: Web not supported. [activate()]', config);
   }
-  reportError(/*options: YAMReportErrorOptions*/): Promise<void> {
-    return Promise.reject('Web not supported. [reportError()]');
+  async reportEvent(options: YAMReportEventOptions): Promise<void> {
+    this.log('AppMetrica: Web not supported. [reportEvent()]', options);
   }
-  setLocation(/*location: YAMLocation*/): Promise<void> {
-    return Promise.reject('Web not supported. [setLocation()]');
+  async reportError(options: YAMReportErrorOptions): Promise<void> {
+    this.log('AppMetrica: Web not supported. [reportError()]', options);
   }
-  setLocationTracking(/*options: { enabled: boolean; }*/): Promise<void> {
-    return Promise.reject('Web not supported. [setLocationTracking()]');
+  async setLocation(location: YAMLocation): Promise<void> {
+    this.log('AppMetrica: Web not supported. [setLocation()]', location);
   }
-  showScreenEvent(/*screen: ECommerceScreen*/): Promise<void> {
-    return Promise.reject('Web not supported. [showScreenEvent()]');
+  async setLocationTracking(options: { enabled: boolean; }): Promise<void> {
+    this.log('AppMetrica: Web not supported. [setLocationTracking()]', options);
   }
-  showProductCardEvent(/*options: YAMShowProductCardEventOptions*/): Promise<void> {
-    return Promise.reject('Web not supported. [showProductCardEvent()]');
+  async showScreenEvent(screen: ECommerceScreen): Promise<void> {
+    this.log('AppMetrica: Web not supported. [showScreenEvent()]', screen);
   }
-  showProductDetailsEvent(/*options: YAMShowProductDetailsEventOptions*/): Promise<void> {
-    return Promise.reject('Web not supported. [showProductDetailsEvent()]');
+  async showProductCardEvent(options: YAMShowProductCardEventOptions): Promise<void> {
+    this.log('AppMetrica: Web not supported. [showProductCardEvent()]', options);
   }
-  addCartItemEvent(/*cartItem: ECommerceCartItem*/): Promise<void> {
-    return Promise.reject('Web not supported. [addCartItemEvent()]');
+  async showProductDetailsEvent(options: YAMShowProductDetailsEventOptions): Promise<void> {
+    this.log('AppMetrica: Web not supported. [showProductDetailsEvent()]', options);
   }
-  removeCartItemEvent(/*cartItem: ECommerceCartItem*/): Promise<void> {
-    return Promise.reject('Web not supported. [removeCartItemEvent()]');
+  async addCartItemEvent(cartItem: ECommerceCartItem): Promise<void> {
+    this.log('AppMetrica: Web not supported. [addCartItemEvent()]', cartItem);
   }
-  beginCheckoutEvent(/*order: ECommerceOrder*/): Promise<void> {
-    return Promise.reject('Web not supported. [beginCheckoutEvent()]');
+  async removeCartItemEvent(cartItem: ECommerceCartItem): Promise<void> {
+    this.log('AppMetrica: Web not supported. [removeCartItemEvent()]', cartItem);
   }
-  purchaseEvent(/*order: ECommerceOrder*/): Promise<void> {
-    return Promise.reject('Web not supported. [purchaseEvent()]');
+  async beginCheckoutEvent(order: ECommerceOrder): Promise<void> {
+    this.log('AppMetrica: Web not supported. [beginCheckoutEvent()]', order);
+  }
+  async purchaseEvent(order: ECommerceOrder): Promise<void> {
+    this.log('AppMetrica: Web not supported. [purchaseEvent()]', order);
+  }
+  async setUserProfileId(userProfileId: YAMUserProfileId): Promise<void> {
+    this.log('AppMetrica: Web not supported. [setUserProfileId()]', userProfileId);
+  }
+  async reportUserProfile(userProfile: YAMUserProfile): Promise<void> {
+    this.log('AppMetrica: Web not supported. [reportUserProfile()]', userProfile);
   }
 }
 
 const AppMetrica = new AppMetricaWeb();
 
 export { AppMetrica };
-
-import { registerWebPlugin } from '@capacitor/core';
-registerWebPlugin(AppMetrica);

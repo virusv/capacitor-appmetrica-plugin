@@ -1,9 +1,3 @@
-declare module '@capacitor/core' {
-  interface PluginRegistry {
-    AppMetrica: AppMetricaPlugin;
-  }
-}
-
 export interface AppMetricaPlugin {
   /**
    * Активация метрики
@@ -87,6 +81,20 @@ export interface AppMetricaPlugin {
    * @param order 
    */
   purchaseEvent(order: ECommerceOrder): Promise<void>;
+
+  /**
+   * User Profile: Отправка идентификатора профиля
+   * 
+   * @param userProfileId 
+   */
+  setUserProfileId(userProfileId: YAMUserProfileId): Promise<void>;
+
+  /**
+   * User Profile: Отправка атрибутов профиля
+   * 
+   * @param userProfile 
+   */
+  reportUserProfile(userProfile: YAMUserProfile): Promise<void>;
 }
 
 //#region Share App Merika
@@ -117,9 +125,15 @@ export interface YAMConfig {
   sessionTimeout?: number;
 
   /**
-   * Включает/отключает сбор и отправку информации об аварийных остановках приложения
+   * Сбор и отправка информации об аварийных остановках приложения
    */
   crashReporting?: boolean;
+
+  /**
+   * Сбор и отправка информации об нативных аварийных остановках приложения (по умолчанию активен)
+   * Только Android!
+   */
+  nativeCrashReporting?: boolean;
 
   /**
    * Включает/отключает логирование работы библиотеки
@@ -201,8 +215,16 @@ export interface YAMReportEventOptions {
 }
 
 export interface YAMReportErrorOptions {
-  name: string;
-  error?: string;
+  /** Идентификатор группы */
+  group: string;
+
+  /** Сообщение ошибки */
+  message?: string;
+
+  /** Дополнительные параметры */
+  parameters?: {
+    [ptop: string]: string;
+  };
 }
 
 export interface YAMShowProductCardEventOptions {
@@ -376,5 +398,29 @@ export interface ECommerceOrder {
    * - размер value: до 1000 символов.
    */
   payload?: ECommercePayload;
+}
+//#endregion
+
+//#region User Profile
+export type YAMGenderType = 'male'|'female'|'other';
+export interface YAMUserProfileBirthDate {
+  year: number;
+  month?: number;
+  day?: number;
+}
+
+export interface YAMUserProfileAge {
+  age: number;
+}
+
+export interface YAMUserProfileId {
+  id: string;
+}
+
+export interface YAMUserProfile {
+  name?: string;
+  gender?: YAMGenderType;
+  notificationEnabled?: boolean;
+  birthDate?: YAMUserProfileBirthDate|YAMUserProfileAge;
 }
 //#endregion
