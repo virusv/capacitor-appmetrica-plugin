@@ -1,6 +1,6 @@
 # Плагин Yandex App Metrica для Capacitor
 
-- Поддержка Capacitor 2, 3 - 5.
+- Поддержка Capacitor 2, 3 - 5, 6.
 - Работает на платформах: iOS, Android.
 - Поддерживает E-Commerce события
 - Поддерживает отправку атрибутов профиля

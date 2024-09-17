@@ -70,7 +70,11 @@ public class AppMetrica: CAPPlugin {
      * Отправляет событие в App метрику
      */
     @objc func reportEvent(_ call: CAPPluginCall) {
-        let evName = call.getString("name") ?? "Undefined"
+        guard let evName = call.getString("name") else {
+            call.reject("Undefined or empty event name")
+            return
+        }
+        
         let evParams = call.getObject("params")
 
         YMMYandexMetrica.reportEvent(evName, parameters: evParams)
@@ -82,7 +86,7 @@ public class AppMetrica: CAPPlugin {
      * Отправляет ошибку в App метрику
      */
     @objc func reportError(_ call: CAPPluginCall) {
-        let group = call.getString("group") ?? call.getString("name") ?? "Undefined"
+        let group = call.getString("group") ?? call.getString("name") ?? "undefined"
         let message = call.getString("message") ?? call.getString("error") ?? nil
         let parameters = call.getObject("parameters", [:])
         
