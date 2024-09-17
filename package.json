@@ -1,6 +1,6 @@
 {
   "name": "capacitor-appmetrica-plugin",
-  "version": "4.0.0",
+  "version": "6.0.0",
   "description": "Yandex App metrica plugin for Capacitor",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
