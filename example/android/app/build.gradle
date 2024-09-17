@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "ru.inaliv.demoapp.appmetrica"
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "ru.inaliv.demoapp.appmetrica"
         minSdkVersion rootProject.ext.minSdkVersion
