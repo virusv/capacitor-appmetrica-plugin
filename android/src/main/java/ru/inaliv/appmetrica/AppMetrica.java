@@ -74,6 +74,11 @@ public class AppMetrica extends Plugin {
     public void reportEvent(final PluginCall call) {
         final String evName = call.getString("name");
 
+        if (evName == null || evName.isBlank()) {
+            call.reject("Undefined or empty event name");
+            return;
+        }
+
         if (call.hasOption("params")) {
             final JSObject evParams = call.getObject("params", new JSObject());
             YandexMetrica.reportEvent(evName, evParams.toString());
@@ -95,7 +100,7 @@ public class AppMetrica extends Plugin {
                 ? call.getString("group")
                 : call.getString("name"); // Legacy
 
-        final String message = call.hasOption("message")
+        String message = call.hasOption("message")
                 ? call.getString("message")
                 : call.getString("error"); // Legacy
 
@@ -107,10 +112,13 @@ public class AppMetrica extends Plugin {
             );
         }
 
-        if (call.hasOption("group")) {
-            final String groupIdentifier = call.getString("group");
-            YandexMetrica.reportError(groupIdentifier, message, errorThrowable);
+        if (group != null) {
+            YandexMetrica.reportError(group, message, errorThrowable);
         } else {
+            if (message == null) {
+                message = "undefined";
+            }
+
             YandexMetrica.reportError(message, errorThrowable);
         }
 
@@ -142,7 +150,7 @@ public class AppMetrica extends Plugin {
      */
     @PluginMethod
     public void setLocationTracking(final PluginCall call) {
-        final boolean enabled = call.getBoolean("enabled", true);
+        final boolean enabled = Boolean.TRUE.equals(call.getBoolean("enabled", true));
         YandexMetrica.setLocationTracking(enabled);
 
         call.resolve();
