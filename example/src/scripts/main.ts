@@ -30,7 +30,7 @@ function createDemoApp() {
 
   const toast = function (message, color = 'dark', duration = 2000) {
     const toast = document.createElement('ion-toast') as HTMLElementIonCustom;
-    toast.message = message;
+    toast.message = typeof message === 'object' ? message.message : message;
     toast.duration = duration;
     toast.color = color;
   
@@ -56,7 +56,7 @@ function createDemoApp() {
     const inputErrorMessage = document.getElementById('input_error_event_message') as HTMLElementIonCustom;
 
     eClick('report_event', () => {
-      const name = inputEventName.value || 'empty';
+      const name = inputEventName.value || undefined;
 
       // Простое событие
       AppMetrica.reportEvent({
@@ -69,7 +69,7 @@ function createDemoApp() {
     });
 
     eClick('report_error', () => {
-      const group = inputErrorGroup.value || 'empty';
+      const group = inputErrorGroup.value || undefined;
       const message = inputErrorMessage.value || undefined;
 
       // Событие ошибки
