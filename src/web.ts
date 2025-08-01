@@ -17,13 +17,6 @@ import {
 export class AppMetricaWeb extends WebPlugin implements AppMetricaPlugin {
   private isMetricaLogs: boolean = false;
 
-  constructor() {
-    super({
-      name: 'AppMetrica',
-      platforms: ['web'],
-    });
-  }
-
   private log(...vars: any[]) {
     if (this.isMetricaLogs) {
       console.log(...vars);
