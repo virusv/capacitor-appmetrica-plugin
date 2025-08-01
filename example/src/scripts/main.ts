@@ -16,7 +16,7 @@ const app = createDemoApp();
 
 app.initMetrika().then(() => {
   app.initActions();
-  console.log("App Metrica -- INIT | Plugin v3.0");
+  console.log("App Metrica -- INIT | Plugin v7.0");
 }).catch((e) => {
   // app.initActions(); // DEV
   alert(e);
