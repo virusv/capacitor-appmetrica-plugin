@@ -9,10 +9,10 @@ end
 
 target 'Plugin' do
   capacitor_pods
-  pod 'YandexMobileMetrica', '4.5.0'
+  pod 'YandexMobileMetrica', '4.5.2'
 end
 
 target 'PluginTests' do
   capacitor_pods
-  pod 'YandexMobileMetrica', '4.5.0'
+  pod 'YandexMobileMetrica', '4.5.2'
 end
