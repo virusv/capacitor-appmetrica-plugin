@@ -8,18 +8,18 @@
 
 import Foundation
 import Capacitor
-import YandexMobileMetrica
+import AppMetricaCore
+import AppMetricaCrashes
 
 /**
- * Please read the Capacitor iOS Plugin Development Guide
- * here: https://capacitorjs.com/docs/plugins/ios
+ * docs: https://appmetrica.yandex.ru/docs/ru/sdk/ios/
  */
 @objc(AppMetrica)
-public class AppMetrica: CAPPlugin {
+public class AppMetricaPlugin: CAPPlugin {
     
     public override func load() {
-        NotificationCenter.default.addObserver(self, selector: #selector(self.handleUrlOpened(notification:)), name: Notification.Name(CAPNotifications.URLOpen.name()), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.handleUniversalLink(notification:)), name: Notification.Name(CAPNotifications.UniversalLinkOpen.name()), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleUrlOpened(notification:)), name: Notification.Name(Notification.Name.capacitorOpenURL.rawValue), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleUniversalLink(notification:)), name: Notification.Name(Notification.Name.capacitorOpenUniversalLink.rawValue), object: nil)
     }
     
     /*
@@ -34,7 +34,7 @@ public class AppMetrica: CAPPlugin {
             return
         }
                 
-        YMMYandexMetrica.handleOpen(url)
+        AppMetrica.trackOpeningURL(url)
     }
     
     /*
@@ -49,7 +49,7 @@ public class AppMetrica: CAPPlugin {
             return
         }
       
-        YMMYandexMetrica.handleOpen(url)
+        AppMetrica.trackOpeningURL(url)
     }
     
     /**
@@ -58,7 +58,13 @@ public class AppMetrica: CAPPlugin {
     @objc func activate(_ call: CAPPluginCall) {
         do {
             let config = try Converter.toConfig(config: call.options)
-            YMMYandexMetrica.activate(with: config)
+            AppMetrica.activate(with: config)
+            
+            if let crashReporting = call.options["crashReporting"] as? Bool {
+                let configuration = AppMetricaCrashesConfiguration()
+                configuration.autoCrashTracking = crashReporting
+                AppMetricaCrashes.crashes().setConfiguration(configuration)
+            }
             
             call.resolve()
         } catch {
@@ -75,9 +81,12 @@ public class AppMetrica: CAPPlugin {
             return
         }
         
-        let evParams = call.getObject("params")
-
-        YMMYandexMetrica.reportEvent(evName, parameters: evParams)
+        if call.options.index(forKey: "params") != nil {
+            let evParams = call.getObject("params")
+            AppMetrica.reportEvent(name: evName, parameters: evParams)
+        } else {
+            AppMetrica.reportEvent(name: evName)
+        }
         
         call.resolve()
     }
@@ -90,7 +99,7 @@ public class AppMetrica: CAPPlugin {
         let message = call.getString("message") ?? call.getString("error") ?? nil
         let parameters = call.getObject("parameters", [:])
         
-        let yandexError = YMMError(
+        let yandexError = AppMetricaError(
             identifier: group,
             message: message,
             parameters: parameters,
@@ -98,7 +107,7 @@ public class AppMetrica: CAPPlugin {
             underlyingError: nil
         )
         
-        YMMYandexMetrica.report(error: yandexError, onFailure: nil)
+        AppMetricaCrashes.crashes().report(error: yandexError)
 
         call.resolve()
     }
@@ -109,7 +118,7 @@ public class AppMetrica: CAPPlugin {
     @objc func setLocation(_ call: CAPPluginCall) {
         let location = Converter.toLocation(location: call.options)
         
-        YMMYandexMetrica.setLocation(location)
+        AppMetrica.customLocation = location
         
         call.resolve()
     }
@@ -120,7 +129,7 @@ public class AppMetrica: CAPPlugin {
     @objc func setLocationTracking(_ call: CAPPluginCall) {
         let enabled = call.getBool("enabled") ?? true
         
-        YMMYandexMetrica.setLocationTracking(enabled)
+        AppMetrica.isLocationTrackingEnabled = enabled
         
         call.resolve()
     }
@@ -130,7 +139,7 @@ public class AppMetrica: CAPPlugin {
      */
     @objc func showScreenEvent(_ call: CAPPluginCall) {
         let screen = Converter.toECommerceScreen(screen: call.options)
-        YMMYandexMetrica.report(eCommerce: .showScreenEvent(screen: screen), onFailure: nil)
+        AppMetrica.reportECommerce(.showScreenEvent(screen: screen), onFailure: nil)
 
         call.resolve()
     }
@@ -143,7 +152,7 @@ public class AppMetrica: CAPPlugin {
             let screen = Converter.toECommerceScreen(screen: call.options["screen"] as? [AnyHashable: Any] ?? [:])
             let product = try Converter.toECommerceProduct(product: call.options["product"] as? [AnyHashable: Any] ?? [:])
             
-            YMMYandexMetrica.report(eCommerce: .showProductCardEvent(product: product, screen: screen), onFailure: nil)
+            AppMetrica.reportECommerce(.showProductCardEvent(product: product, screen: screen), onFailure: nil)
             
             call.resolve()
         }
@@ -163,7 +172,7 @@ public class AppMetrica: CAPPlugin {
             let referrer = Converter.toECommerceReferrer(referrer: call.options["referrer"] as? [AnyHashable: Any] ?? [:])
             let product = try Converter.toECommerceProduct(product: call.options["product"] as? [AnyHashable: Any] ?? [:])
             
-            YMMYandexMetrica.report(eCommerce: .showProductDetailsEvent(product: product, referrer: referrer), onFailure: nil)
+            AppMetrica.reportECommerce(.showProductDetailsEvent(product: product, referrer: referrer), onFailure: nil)
             
             call.resolve()
         }
@@ -182,7 +191,7 @@ public class AppMetrica: CAPPlugin {
     @objc func addCartItemEvent(_ call: CAPPluginCall) {
         do {
             let cartItem = try Converter.toECommerceCartItem(item: call.options)
-            YMMYandexMetrica.report(eCommerce: .addCartItemEvent(cartItem: cartItem), onFailure: nil)
+            AppMetrica.reportECommerce(.addCartItemEvent(cartItem: cartItem), onFailure: nil)
             
             call.resolve()
         }
@@ -200,7 +209,7 @@ public class AppMetrica: CAPPlugin {
     @objc func removeCartItemEvent(_ call: CAPPluginCall) {
         do {
             let cartItem = try Converter.toECommerceCartItem(item: call.options)
-            YMMYandexMetrica.report(eCommerce: .removeCartItemEvent(cartItem: cartItem), onFailure: nil)
+            AppMetrica.reportECommerce(.removeCartItemEvent(cartItem: cartItem), onFailure: nil)
             
             call.resolve()
         }
@@ -219,7 +228,7 @@ public class AppMetrica: CAPPlugin {
         do {
             let order = try Converter.toECommerceOrder(order: call.options)
             
-            YMMYandexMetrica.report(eCommerce: .beginCheckoutEvent(order: order), onFailure: nil)
+            AppMetrica.reportECommerce(.beginCheckoutEvent(order: order), onFailure: nil)
             
             call.resolve()
         }
@@ -238,7 +247,7 @@ public class AppMetrica: CAPPlugin {
         do {
             let order = try Converter.toECommerceOrder(order: call.options)
             
-            YMMYandexMetrica.report(eCommerce: .purchaseEvent(order: order), onFailure: nil)
+            AppMetrica.reportECommerce(.purchaseEvent(order: order), onFailure: nil)
             
             call.resolve()
         }
@@ -255,7 +264,7 @@ public class AppMetrica: CAPPlugin {
      */
     @objc func setUserProfileId(_ call: CAPPluginCall) {
         if let userId = call.options["id"] as? String {
-            YMMYandexMetrica.setUserProfileID(userId)
+            AppMetrica.userProfileID = userId
             call.resolve()
         } else {
             call.reject("Не передан обязательный идентификатор профиля")
@@ -267,8 +276,12 @@ public class AppMetrica: CAPPlugin {
      */
     @objc func reportUserProfile(_ call: CAPPluginCall) {
         do {
+            if let userId = call.options["id"] as? String {
+                AppMetrica.userProfileID = userId
+            }
+            
             let profile = try Converter.toUserProfile(user: call.options)
-            YMMYandexMetrica.report(profile)
+            AppMetrica.reportUserProfile(profile)
             
             call.resolve()
         } catch {
