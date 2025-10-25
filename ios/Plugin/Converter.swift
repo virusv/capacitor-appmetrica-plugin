@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import YandexMobileMetrica
+import AppMetricaCore
 import CoreLocation
 
 class Converter {
@@ -23,12 +23,12 @@ class Converter {
     /*
      * Конвертирует JSObject конфигурацию в объект конфигурации для AppMetrika
      */
-    static func toConfig(config: [AnyHashable: Any]) throws -> YMMYandexMetricaConfiguration {
+    static func toConfig(config: [AnyHashable: Any]) throws -> AppMetricaConfiguration {
         guard let apiKey = config["apiKey"] as? String else {
             throw ValidationError.apiKeyNotDefined
         }
         
-        let yamConfig = YMMYandexMetricaConfiguration.init(apiKey: apiKey)!
+        let yamConfig = AppMetricaConfiguration.init(apiKey: apiKey)!
         
         if let handleFirstActivationAsUpdate = config["handleFirstActivationAsUpdate"] as? Bool {
             yamConfig.handleFirstActivationAsUpdate = handleFirstActivationAsUpdate
@@ -42,20 +42,16 @@ class Converter {
             yamConfig.sessionTimeout = sessionTimeout
         }
         
-        if let crashReporting = config["crashReporting"] as? Bool {
-            yamConfig.crashReporting = crashReporting
-        }
-        
         if let appVersion = config["appVersion"] as? String {
             yamConfig.appVersion = appVersion
         }
         
         if let logs = config["logs"] as? Bool {
-            yamConfig.logs = logs
+            yamConfig.areLogsEnabled = logs
         }
         
         if let location = config["location"] as? [AnyHashable: Any] {
-            yamConfig.location = self.toLocation(location: location)
+            yamConfig.customLocation = self.toLocation(location: location)
         }
         
         return yamConfig
@@ -104,8 +100,8 @@ class Converter {
      *
      * NOTE: В SDK для iOS "сategoriesPath" называется "categoryComponents"
      */
-    static func toECommerceScreen(screen: [AnyHashable: Any]) -> YMMECommerceScreen {
-        let yamScreen = YMMECommerceScreen(
+    static func toECommerceScreen(screen: [AnyHashable: Any]) -> ECommerceScreen {
+        let yamScreen = ECommerceScreen(
             name:               screen["name"] as? String,
             categoryComponents: self.toStringArray(screen["categoriesPath"]),
             searchQuery:        screen["searchQuery"] as? String,
@@ -130,13 +126,13 @@ class Converter {
      *     }
      * }
      */
-    static func toECommerceProduct(product: [AnyHashable: Any]) throws -> YMMECommerceProduct {
+    static func toECommerceProduct(product: [AnyHashable: Any]) throws -> ECommerceProduct {
         guard let sku = product["sku"] as? String else {
             throw ValidationError.incorrectProductSku
         }
         
-        var actualPrice: YMMECommercePrice? = nil
-        var originalPrice: YMMECommercePrice? = nil
+        var actualPrice: ECommercePrice? = nil
+        var originalPrice: ECommercePrice? = nil
         
         if product.index(forKey: "actualPrice") != nil {
             actualPrice = try self.toECommercePrice(price: product["actualPrice"] as? [AnyHashable: Any] ?? [:])
@@ -146,7 +142,7 @@ class Converter {
             originalPrice = try self.toECommercePrice(price: product["originalPrice"] as? [AnyHashable: Any] ?? [:])
         }
         
-        let yamProduct = YMMECommerceProduct(
+        let yamProduct = ECommerceProduct(
             sku:                sku,
             name:               product["name"] as? String,
             categoryComponents: self.toStringArray(product["categoriesPath"]),
@@ -168,7 +164,7 @@ class Converter {
      *     "referrer": { ... }  // Смотри структуру toECommerceReferrer()
      * }
      */
-    static func toECommerceCartItem(item: [AnyHashable: Any]) throws -> YMMECommerceCartItem {
+    static func toECommerceCartItem(item: [AnyHashable: Any]) throws -> ECommerceCartItem {
         let yamProduct = try self.toECommerceProduct(product: item["product"] as? [AnyHashable: Any] ?? [:])
         let yamRevenue = try self.toECommercePrice(price: item["revenue"] as? [AnyHashable: Any] ?? [:])
         
@@ -176,12 +172,12 @@ class Converter {
             throw ValidationError.incorrectProductItemQty
         }
         
-        var yamReferrer: YMMECommerceReferrer? = nil
+        var yamReferrer: ECommerceReferrer? = nil
         if item.index(forKey: "referrer") != nil {
             yamReferrer = self.toECommerceReferrer(referrer: item["referrer"] as? [AnyHashable: Any] ?? [:])
         }
         
-        let yamCartItem = YMMECommerceCartItem(
+        let yamCartItem = ECommerceCartItem(
             product:    yamProduct,
             quantity:   NSDecimalNumber(value: quantity.doubleValue),
             revenue:    yamRevenue,
@@ -205,7 +201,7 @@ class Converter {
      *     }
      * }
      */
-    static func toECommerceOrder(order: [AnyHashable: Any]) throws -> YMMECommerceOrder {
+    static func toECommerceOrder(order: [AnyHashable: Any]) throws -> ECommerceOrder {
         guard let identifier = order["identifier"] as? String else {
             throw ValidationError.incorrectOrderId
         }
@@ -218,7 +214,7 @@ class Converter {
             return try self.toECommerceCartItem(item: item)
         }
         
-        let yamOrder = YMMECommerceOrder(
+        let yamOrder = ECommerceOrder(
             identifier: identifier,
             cartItems:  yamCartItems,
             payload:    order["payload"] as? [String: String]
@@ -235,14 +231,14 @@ class Converter {
      *     "screen": { ... }      // Смотри структуру toECommerceScreen
      * }
      */
-    static func toECommerceReferrer(referrer: [AnyHashable: Any]) -> YMMECommerceReferrer {
-        var yamScreen: YMMECommerceScreen? = nil
+    static func toECommerceReferrer(referrer: [AnyHashable: Any]) -> ECommerceReferrer {
+        var yamScreen: ECommerceScreen? = nil
         
         if referrer.index(forKey: "screen") != nil {
             yamScreen = toECommerceScreen(screen: referrer["screen"] as? [AnyHashable: Any] ?? [:])
         }
         
-        let yamReferrer = YMMECommerceReferrer(
+        let yamReferrer = ECommerceReferrer(
             type:       referrer["type"] as? String,
             identifier: referrer["identifier"] as? String,
             screen:     yamScreen
@@ -262,12 +258,12 @@ class Converter {
      *     ]
      * }
      */
-    static func toECommercePrice(price: [AnyHashable: Any]) throws -> YMMECommercePrice {
-        let internalComponents: [YMMECommerceAmount]? = try (price["internalComponents"] as? [Any])?.map { amount in
+    static func toECommercePrice(price: [AnyHashable: Any]) throws -> ECommercePrice {
+        let internalComponents: [ECommerceAmount]? = try (price["internalComponents"] as? [Any])?.map { amount in
             return try self.toECommerceAmount(amount: amount as? [Any] ?? [])
         }
         
-        let actualPrice = YMMECommercePrice(
+        let actualPrice = ECommercePrice(
             fiat: try self.toECommerceAmount(amount: price["fiat"]! as? [Any] ?? []),
             internalComponents: internalComponents
         )
@@ -279,7 +275,7 @@ class Converter {
      * From:
      * [10.5, "USD"]
      */
-    static func toECommerceAmount(amount: [Any]) throws -> YMMECommerceAmount {
+    static func toECommerceAmount(amount: [Any]) throws -> ECommerceAmount {
         guard
             let value = amount[0] as? NSNumber,
             let unit  = amount[1] as? String
@@ -287,7 +283,7 @@ class Converter {
             throw ValidationError.incorrectAmount
         }
         
-        let yamAmount = YMMECommerceAmount(
+        let yamAmount = ECommerceAmount(
             unit:  unit,
             value: NSDecimalNumber(value: value.doubleValue)
         )
@@ -325,38 +321,38 @@ class Converter {
      *   }
      * }
      */
-    static func toUserProfile(user: [AnyHashable: Any]) throws -> YMMMutableUserProfile {
-        let yamProfile = YMMMutableUserProfile()
+    static func toUserProfile(user: [AnyHashable: Any]) throws -> MutableUserProfile {
+        let yamProfile = MutableUserProfile()
         
         if let name = user["name"] as? String {
-            yamProfile.apply(YMMProfileAttribute.name().withValue(name))
+            yamProfile.apply(ProfileAttribute.name().withValue(name))
         }
         
         if let gender = user["gender"] as? String {
-            yamProfile.apply(YMMProfileAttribute.gender().withValue(toGenderType(gender)))
+            yamProfile.apply(ProfileAttribute.gender().withValue(toGenderType(gender)))
         }
         
         if let birthDateParts = user["birthDate"] as? [AnyHashable: Any] {
-            var birthDate: YMMUserProfileUpdate? = nil;
+            var birthDate: UserProfileUpdate? = nil;
             
             if let year = birthDateParts["year"] as? NSNumber as? UInt {
                 if let month = birthDateParts["month"] as? NSNumber as? UInt {
                     if let day = birthDateParts["day"] as? NSNumber as? UInt {
-                        birthDate = YMMProfileAttribute
+                        birthDate = ProfileAttribute
                             .birthDate()
                             .withDate(year: year, month: month, day: day)
                     } else {
-                        birthDate = YMMProfileAttribute
+                        birthDate = ProfileAttribute
                             .birthDate()
                             .withDate(year: year, month: month)
                     }
                 } else {
-                    birthDate = YMMProfileAttribute
+                    birthDate = ProfileAttribute
                         .birthDate()
                         .withDate(year: year)
                 }
             } else if let age = birthDateParts["age"] as? NSNumber as? UInt {
-                birthDate = YMMProfileAttribute
+                birthDate = ProfileAttribute
                     .birthDate()
                     .withAge(age)
             }
@@ -367,22 +363,22 @@ class Converter {
         }
         
         if let notificationEnabled = user["notificationEnabled"] as? Bool {
-            yamProfile.apply(YMMProfileAttribute.notificationsEnabled().withValue(notificationEnabled))
+            yamProfile.apply(ProfileAttribute.notificationsEnabled().withValue(notificationEnabled))
         }
         
         return yamProfile
     }
     
-    static func toGenderType(_ gender: String) -> YMMGenderType {
+    static func toGenderType(_ gender: String) -> GenderType {
         if gender == "female" {
-            return YMMGenderType.female
+            return GenderType.female
         }
         
         if gender == "male" {
-            return YMMGenderType.male
+            return GenderType.male
         }
         
-        return YMMGenderType.other
+        return GenderType.other
     }
 }
 

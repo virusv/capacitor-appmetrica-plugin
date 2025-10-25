@@ -5,21 +5,19 @@ import android.content.Intent;
 import android.location.Location;
 import android.app.Activity;
 
-import com.yandex.metrica.YandexMetrica;
-import com.yandex.metrica.YandexMetricaConfig;
+import android.location.Location;
+import com.getcapacitor.*;
+import com.getcapacitor.annotation.CapacitorPlugin;
+
+import io.appmetrica.analytics.AppMetricaConfig;
+import io.appmetrica.analytics.ecommerce.*;
+import io.appmetrica.analytics.profile.UserProfile;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.yandex.metrica.ecommerce.ECommerceCartItem;
-import com.yandex.metrica.ecommerce.ECommerceEvent;
-import com.yandex.metrica.ecommerce.ECommerceOrder;
-import com.yandex.metrica.ecommerce.ECommerceProduct;
-import com.yandex.metrica.ecommerce.ECommerceReferrer;
-import com.yandex.metrica.ecommerce.ECommerceScreen;
-import com.yandex.metrica.profile.UserProfile;
 
 import org.json.JSONException;
 import java.util.concurrent.ExecutorService;
@@ -40,7 +38,7 @@ public class AppMetrica extends Plugin {
      */
     @PluginMethod
     public void activate(final PluginCall call) {
-        final YandexMetricaConfig config;
+        final AppMetricaConfig config;
         try {
             config = Converter.toConfig(call.getData());
         } catch (JSONException e) {
@@ -48,14 +46,14 @@ public class AppMetrica extends Plugin {
             return;
         }
 
-        YandexMetrica.activate(getContext(), config);
+        io.appmetrica.analytics.AppMetrica.activate(getContext(), config);
 
         synchronized (mLock) {
-            if (mAppMetricaActivated == false) {
-                YandexMetrica.reportAppOpen(getActivity());
+            if (!mAppMetricaActivated) {
+                io.appmetrica.analytics.AppMetrica.reportAppOpen(getActivity());
 
-                if (mActivityPaused == false) {
-                    YandexMetrica.resumeSession(getActivity());
+                if (!mActivityPaused) {
+                    io.appmetrica.analytics.AppMetrica.resumeSession(getActivity());
                 }
             }
 
@@ -81,10 +79,10 @@ public class AppMetrica extends Plugin {
 
         if (call.hasOption("params")) {
             final JSObject evParams = call.getObject("params", new JSObject());
-            YandexMetrica.reportEvent(evName, evParams.toString());
+            io.appmetrica.analytics.AppMetrica.reportEvent(evName, evParams.toString());
         }
         else {
-            YandexMetrica.reportEvent(evName);
+            io.appmetrica.analytics.AppMetrica.reportEvent(evName);
         }
 
         call.resolve();
@@ -113,13 +111,13 @@ public class AppMetrica extends Plugin {
         }
 
         if (group != null) {
-            YandexMetrica.reportError(group, message, errorThrowable);
+            io.appmetrica.analytics.AppMetrica.reportError(group, message, errorThrowable);
         } else {
             if (message == null) {
                 message = "undefined";
             }
 
-            YandexMetrica.reportError(message, errorThrowable);
+            io.appmetrica.analytics.AppMetrica.reportError(message, errorThrowable);
         }
 
         call.resolve();
@@ -136,7 +134,7 @@ public class AppMetrica extends Plugin {
 
         try {
             final Location location = Converter.toLocation(locationObj);
-            YandexMetrica.setLocation(location);
+            io.appmetrica.analytics.AppMetrica.setLocation(location);
 
             call.resolve();
         } catch (JSONException e) {
@@ -151,7 +149,7 @@ public class AppMetrica extends Plugin {
     @PluginMethod
     public void setLocationTracking(final PluginCall call) {
         final boolean enabled = Boolean.TRUE.equals(call.getBoolean("enabled", true));
-        YandexMetrica.setLocationTracking(enabled);
+        io.appmetrica.analytics.AppMetrica.setLocationTracking(enabled);
 
         call.resolve();
     }
@@ -169,7 +167,7 @@ public class AppMetrica extends Plugin {
             ECommerceScreen screen = Converter.toECommerceScreen(call.getData());
 
             ECommerceEvent showScreenEvent = ECommerceEvent.showScreenEvent(screen);
-            YandexMetrica.reportECommerce(showScreenEvent);
+            io.appmetrica.analytics.AppMetrica.reportECommerce(showScreenEvent);
 
             call.resolve();
         } catch (JSONException e) {
@@ -189,7 +187,7 @@ public class AppMetrica extends Plugin {
             ECommerceScreen screen = Converter.toECommerceScreen(call.getObject("screen"));
 
             ECommerceEvent showProductCardEvent = ECommerceEvent.showProductCardEvent(product, screen);
-            YandexMetrica.reportECommerce(showProductCardEvent);
+            io.appmetrica.analytics.AppMetrica.reportECommerce(showProductCardEvent);
 
             call.resolve();
         } catch (JSONException e) {
@@ -209,7 +207,7 @@ public class AppMetrica extends Plugin {
             ECommerceReferrer referrer = Converter.toECommerceReferrer(call.getObject("referrer"));
 
             ECommerceEvent showProductDetailsEvent = ECommerceEvent.showProductDetailsEvent(product, referrer);
-            YandexMetrica.reportECommerce(showProductDetailsEvent);
+            io.appmetrica.analytics.AppMetrica.reportECommerce(showProductDetailsEvent);
 
             call.resolve();
         } catch (JSONException e) {
@@ -228,7 +226,7 @@ public class AppMetrica extends Plugin {
             ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
 
             ECommerceEvent addCartItemEvent = ECommerceEvent.addCartItemEvent(cartItem);
-            YandexMetrica.reportECommerce(addCartItemEvent);
+            io.appmetrica.analytics.AppMetrica.reportECommerce(addCartItemEvent);
 
             call.resolve();
         } catch (JSONException e) {
@@ -247,7 +245,7 @@ public class AppMetrica extends Plugin {
             ECommerceCartItem cartItem = Converter.toECommerceCartItem(call.getData());
 
             ECommerceEvent removeCartItemEvent = ECommerceEvent.removeCartItemEvent(cartItem);
-            YandexMetrica.reportECommerce(removeCartItemEvent);
+            io.appmetrica.analytics.AppMetrica.reportECommerce(removeCartItemEvent);
 
             call.resolve();
         } catch (JSONException e) {
@@ -266,7 +264,7 @@ public class AppMetrica extends Plugin {
             ECommerceOrder order = Converter.toECommerceOrder(call.getData());
 
             ECommerceEvent beginCheckoutEvent = ECommerceEvent.beginCheckoutEvent(order);
-            YandexMetrica.reportECommerce(beginCheckoutEvent);
+            io.appmetrica.analytics.AppMetrica.reportECommerce(beginCheckoutEvent);
 
             call.resolve();
         } catch (JSONException e) {
@@ -285,7 +283,7 @@ public class AppMetrica extends Plugin {
             ECommerceOrder order = Converter.toECommerceOrder(call.getData());
 
             ECommerceEvent purchaseEvent = ECommerceEvent.purchaseEvent(order);
-            YandexMetrica.reportECommerce(purchaseEvent);
+            io.appmetrica.analytics.AppMetrica.reportECommerce(purchaseEvent);
 
             call.resolve();
         } catch (JSONException e) {
@@ -303,7 +301,7 @@ public class AppMetrica extends Plugin {
     @PluginMethod
     public void setUserProfileId(final PluginCall call) {
         if (call.hasOption("id")) {
-            YandexMetrica.setUserProfileID(call.getString("id"));
+            io.appmetrica.analytics.AppMetrica.setUserProfileID(call.getString("id"));
 
             call.resolve();
         } else {
@@ -320,7 +318,7 @@ public class AppMetrica extends Plugin {
     public void reportUserProfile(final PluginCall call) {
         try {
             UserProfile userProfile = Converter.toUserProfile(call.getData());
-            YandexMetrica.reportUserProfile(userProfile);
+            io.appmetrica.analytics.AppMetrica.reportUserProfile(userProfile);
 
             call.resolve();
         } catch (JSONException e) {
@@ -336,7 +334,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = false;
             if (mAppMetricaActivated) {
-                YandexMetrica.resumeSession(getActivity());
+                io.appmetrica.analytics.AppMetrica.resumeSession(getActivity());
             }
         }
     }
@@ -348,7 +346,7 @@ public class AppMetrica extends Plugin {
         synchronized (mLock) {
             mActivityPaused = true;
             if (mAppMetricaActivated) {
-                YandexMetrica.pauseSession(getActivity());
+                io.appmetrica.analytics.AppMetrica.pauseSession(getActivity());
             }
         }
     }
@@ -362,7 +360,7 @@ public class AppMetrica extends Plugin {
             @Override
             public void run() {
                 if (mAppMetricaActivated) {
-                    YandexMetrica.reportAppOpen(getActivity());
+                    io.appmetrica.analytics.AppMetrica.reportAppOpen(getActivity());
                 }
             }
         });

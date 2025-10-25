@@ -24,11 +24,11 @@ app.initMetrika().then(() => {
 
 function createDemoApp() {
   // Helpers
-  const eClick = function (id, handler) {
+  const eClick = function (id: string, handler: (...params: any) => any) {
     return document.getElementById(id)?.addEventListener('click', handler);
   };
 
-  const toast = function (message, color = 'dark', duration = 2000) {
+  const toast = function (message: string|Record<string, any>, color = 'dark', duration = 2000) {
     const toast = document.createElement('ion-toast') as HTMLElementIonCustom;
     toast.message = typeof message === 'object' ? message.message : message;
     toast.duration = duration;
@@ -43,6 +43,8 @@ function createDemoApp() {
     apiKey: 'b294b640-42a1-485e-b45f-82cf1dd34e91',
 
     logs: true,
+
+    crashReporting: true,
   };
 
   function initMetrika() {
