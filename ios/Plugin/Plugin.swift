@@ -33,7 +33,7 @@ public class AppMetricaPlugin: CAPPlugin {
         guard let url = (object["url"] as? URL) else {
             return
         }
-                
+        
         AppMetrica.trackOpeningURL(url)
     }
     
