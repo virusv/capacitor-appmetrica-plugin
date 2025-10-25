@@ -1,13 +1,13 @@
 import {
   AppMetrica,
-  type ECommerceCartItem,
-  type ECommerceOrder,
-  type ECommercePrice,
-  type ECommerceProduct,
-  type ECommerceReferrer,
-  type ECommerceScreen,
-  type YAMConfig,
-  type YAMUserProfile
+  ECommerceCartItem,
+  ECommerceOrder,
+  ECommercePrice,
+  ECommerceProduct,
+  ECommerceReferrer,
+  ECommerceScreen,
+  YAMConfig,
+  YAMUserProfile
 } from 'capacitor-appmetrica-plugin';
 
 type HTMLElementIonCustom = HTMLElement & Record<string, any>;

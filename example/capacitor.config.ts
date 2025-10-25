@@ -1,4 +1,4 @@
-import { type CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'ru.inaliv.demoapp.appmetrica',

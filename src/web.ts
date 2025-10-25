@@ -1,17 +1,17 @@
 import { WebPlugin } from '@capacitor/core';
 import {
   AppMetricaPlugin,
-  type YAMConfig,
-  type YAMReportEventOptions,
-  type YAMReportErrorOptions,
-  type YAMLocation,
-  type ECommerceScreen,
-  type YAMShowProductCardEventOptions,
-  type YAMShowProductDetailsEventOptions,
-  type ECommerceCartItem,
-  type ECommerceOrder,
-  type YAMUserProfileId,
-  type YAMUserProfile
+  YAMConfig,
+  YAMReportEventOptions,
+  YAMReportErrorOptions,
+  YAMLocation,
+  ECommerceScreen,
+  YAMShowProductCardEventOptions,
+  YAMShowProductDetailsEventOptions,
+  ECommerceCartItem,
+  ECommerceOrder,
+  YAMUserProfileId,
+  YAMUserProfile
 } from './definitions';
 
 export class AppMetricaWeb extends WebPlugin implements AppMetricaPlugin {
