@@ -3,18 +3,18 @@ package ru.inaliv.appmetrica;
 import android.location.Location;
 import android.os.Build;
 
-import com.yandex.metrica.YandexMetricaConfig;
-import com.yandex.metrica.ecommerce.ECommerceAmount;
-import com.yandex.metrica.ecommerce.ECommerceCartItem;
-import com.yandex.metrica.ecommerce.ECommerceOrder;
-import com.yandex.metrica.ecommerce.ECommercePrice;
-import com.yandex.metrica.ecommerce.ECommerceProduct;
-import com.yandex.metrica.ecommerce.ECommerceReferrer;
-import com.yandex.metrica.ecommerce.ECommerceScreen;
-import com.yandex.metrica.profile.Attribute;
-import com.yandex.metrica.profile.GenderAttribute;
-import com.yandex.metrica.profile.UserProfile;
-import com.yandex.metrica.profile.UserProfileUpdate;
+import io.appmetrica.analytics.AppMetricaConfig;
+import io.appmetrica.analytics.ecommerce.ECommerceAmount;
+import io.appmetrica.analytics.ecommerce.ECommerceCartItem;
+import io.appmetrica.analytics.ecommerce.ECommerceOrder;
+import io.appmetrica.analytics.ecommerce.ECommercePrice;
+import io.appmetrica.analytics.ecommerce.ECommerceProduct;
+import io.appmetrica.analytics.ecommerce.ECommerceReferrer;
+import io.appmetrica.analytics.ecommerce.ECommerceScreen;
+import io.appmetrica.analytics.profile.Attribute;
+import io.appmetrica.analytics.profile.GenderAttribute;
+import io.appmetrica.analytics.profile.UserProfile;
+import io.appmetrica.analytics.profile.UserProfileUpdate;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class Converter {
@@ -34,9 +36,9 @@ public class Converter {
      * @param config
      * @return
      */
-    public static YandexMetricaConfig toConfig(final JSONObject config) throws JSONException {
+    public static AppMetricaConfig toConfig(final JSONObject config) throws JSONException {
         final String apiKey = config.getString("apiKey");
-        final YandexMetricaConfig.Builder builder = YandexMetricaConfig.newConfigBuilder(apiKey);
+        final AppMetricaConfig.Builder builder = AppMetricaConfig.newConfigBuilder(apiKey);
 
         if (config.has("handleFirstActivationAsUpdate")) {
             builder.handleFirstActivationAsUpdate(config.getBoolean("handleFirstActivationAsUpdate"));
@@ -495,14 +497,10 @@ public class Converter {
     }
 
     private static GenderAttribute.Gender toGenderType(final String gender) {
-        if (gender == "female") {
-            return GenderAttribute.Gender.FEMALE;
-        }
-
-        if (gender == "male") {
-            return GenderAttribute.Gender.MALE;
-        }
-
-        return GenderAttribute.Gender.OTHER;
+        return switch (gender.toLowerCase(Locale.ROOT)) {
+            case "female" -> GenderAttribute.Gender.FEMALE;
+            case "male" -> GenderAttribute.Gender.MALE;
+            default -> GenderAttribute.Gender.OTHER;
+        };
     }
 }

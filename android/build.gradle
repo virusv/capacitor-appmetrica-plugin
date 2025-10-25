@@ -56,6 +56,12 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
-    implementation "com.yandex.android:mobmetricalib:5.3.0"
-    implementation 'com.yandex.android:mobmetricalib-ndk-crashes:2.0.0'
+
+    // AppMetrica SDK.
+    implementation 'io.appmetrica.analytics:analytics:7.13.0'
+    implementation "io.appmetrica.analytics:analytics-ad-revenue:7.13.0"
+    // configurations.configureEach {
+    //   exclude group: "io.appmetrica.analytics", module: "analytics-identifiers"
+    //   exclude group: "io.appmetrica.analytics", module: "analytics-location"
+    // }
 }
