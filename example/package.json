@@ -1,6 +1,6 @@
 {
   "name": "capacitor-appmetrica-demoapp",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "AppMetrica plugin exampple app",
   "main": "index.js",
   "keywords": [
