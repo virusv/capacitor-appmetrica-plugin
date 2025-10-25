@@ -14,7 +14,7 @@ import AppMetricaCrashes
 /**
  * docs: https://appmetrica.yandex.ru/docs/ru/sdk/ios/
  */
-@objc(AppMetrica)
+@objc(AppMetricaPlugin)
 public class AppMetricaPlugin: CAPPlugin {
     
     public override func load() {
