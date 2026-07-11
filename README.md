@@ -1,6 +1,6 @@
 # Плагин Yandex App Metrica для Capacitor
 
-- Поддержка Capacitor 2, 3 - 5, 6, 7.
+- Поддержка Capacitor 2, 3 - 5, 6, 7, 8.
 - Работает на платформах: iOS, Android.
 - Поддерживает E-Commerce события
 - Поддерживает отправку атрибутов профиля
@@ -25,16 +25,8 @@ npx cap open android|ios
 
 ## Установка
 
-Capacitor 3, 4, 5:
 ```bash
 npm install capacitor-appmetrica-plugin
-
-npx cap sync
-```
-
-Для Capacitor 2:
-```bash
-npm install capacitor-appmetrica-plugin@^2.0.0
 
 npx cap sync
 ```
