@@ -15,7 +15,26 @@ import AppMetricaCrashes
  * docs: https://appmetrica.yandex.ru/docs/ru/sdk/ios/
  */
 @objc(AppMetricaPlugin)
-public class AppMetricaPlugin: CAPPlugin {
+public class AppMetricaPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "AppMetricaPlugin"
+    public let jsName = "AppMetrica"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "activate", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "reportEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "reportError", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "showScreenEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "showProductCardEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "showProductDetailsEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "addCartItemEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "removeCartItemEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "beginCheckoutEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "purchaseEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setLocation", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setLocationTracking", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setUserProfileId", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "reportUserProfile", returnType: CAPPluginReturnPromise),
+    ]
+
     
     public override func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleUrlOpened(notification:)), name: Notification.Name(Notification.Name.capacitorOpenURL.rawValue), object: nil)

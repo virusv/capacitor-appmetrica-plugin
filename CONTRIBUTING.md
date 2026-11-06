@@ -35,6 +35,14 @@ Build and validate the web and native projects.
 
 This is useful to run in CI to verify that the plugin builds for all platforms.
 
+#### `npm run test:spm`
+
+After `npm run build`, checks that the Swift bridge matches the public TypeScript API, AppMetrica SDK constraints match CocoaPods, and the npm package includes the JavaScript and native files required by both platforms.
+
+#### `npm run verify:spm`
+
+Builds the Swift package for a generic iOS device with Xcode. The existing `verify:ios` command still validates the CocoaPods development project. Run both before releasing iOS changes.
+
 #### `npm run lint` / `npm run fmt`
 
 Check formatting and code quality, autoformat/autofix if possible.

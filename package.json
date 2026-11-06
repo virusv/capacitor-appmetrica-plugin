@@ -11,7 +11,8 @@
     "android/build.gradle",
     "dist/",
     "ios/Plugin/",
-    "CapacitorAppmetricaPlugin.podspec"
+    "CapacitorAppmetricaPlugin.podspec",
+    "Package.swift"
   ],
   "author": "Nalivayko Ivan",
   "license": "MIT",
@@ -28,7 +29,7 @@
     "native"
   ],
   "scripts": {
-    "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
+    "verify": "npm run test:spm && npm run verify:spm && npm run verify:ios && npm run verify:android && npm run verify:web",
     "verify:ios": "cd ios && pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin && cd ..",
     "verify:android": "cd android && ./gradlew clean build test && cd ..",
     "verify:web": "npm run build",
@@ -41,7 +42,10 @@
     "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "verify:spm": "xcodebuild -scheme CapacitorAppmetricaPlugin -destination generic/platform=iOS build",
+    "test:spm": "node --test test/spm.test.mjs",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",
