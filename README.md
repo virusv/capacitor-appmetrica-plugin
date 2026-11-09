@@ -31,6 +31,12 @@ npm install capacitor-appmetrica-plugin
 npx cap sync
 ```
 
+### iOS: CocoaPods и Swift Package Manager
+
+Плагин поддерживает оба менеджера зависимостей на Capacitor 8. Для SPM создайте iOS-проект командой `npx cap add ios --packagemanager SPM`, затем выполните `npx cap sync ios`.
+
+SPM-манифест входит в npm-пакет. SDK AppMetrica остаётся в серии 5.14.x, JS API сохраняется. При обновлении приложения с CocoaPods на SPM используйте стандартную процедуру миграции Capacitor.
+
 ### Android
 
 **Настройка геолокации (опционально)**
